@@ -119,8 +119,6 @@ function toggleSidebar() {
   }
 }
 
-openSidebar();
-
 function openSidebar() {
   sidebarIsOpen = true;
 
@@ -157,7 +155,7 @@ sidebar.querySelectorAll(".sidebar-nav-option").forEach(option => {
   });
 });
 
-showPage(componentsPage);
+showPage(mainTestPage);
 
 function showPage(page) {
   allPages.forEach(page => page.style.display = "none");
@@ -165,3 +163,117 @@ function showPage(page) {
   page.style.display = "flex"
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+// ===================================
+// Collapsing searchbar try
+// ===================================
+
+// .page-header.collapsed {
+//   gap: 0;
+// }
+
+// .page-header.collapsed .open-sidebar-button {
+//   transform: translateY(49px);
+//   transition: transform 0.1s linear;
+// }
+
+// .page-header.collapsed .page-title h1 {
+//   margin: 0;
+//   margin-left: -42px;
+//   transition: transform 0.1s linear;
+// }
+
+// .page-header.collapsed .searchbar {
+//   height: 0;
+//   border-width: 0;
+//   padding-top: 0;
+//   padding-bottom: 0;
+//   overflow: hidden;
+// }
+
+
+
+// JavaScripts
+// function center(rect) {
+//   return {
+//     x: rect.left + rect.width / 2,
+//     y: rect.top + rect.height / 2
+//   };
+// }
+
+// const header = document.querySelector(".page-header");
+// const title = document.querySelector(".page-title h1");
+// const icon = document.querySelector(".open-sidebar-button");
+// const searchbar = document.querySelector(".searchbar");
+
+// function measureLayout() {
+//   const expanded = {
+//     title: center(title.getBoundingClientRect()),
+//     icon: center(icon.getBoundingClientRect()),
+//     searchHeight: searchbar.offsetHeight
+//   };
+
+//   header.classList.add("collapsed");
+
+//   const collapsed = {
+//     title: center(title.getBoundingClientRect()),
+//     icon: center(icon.getBoundingClientRect())
+//   };
+
+//   header.classList.remove("collapsed");
+
+//   return { expanded, collapsed };
+// }
+
+// let layout = measureLayout();
+
+// window.addEventListener("resize", () => {
+//   layout = measureLayout();
+// });
+
+// const grid = document.querySelector("#grid");
+
+// grid.addEventListener("scroll", () => {
+//   const progress = Math.min(
+//     grid.scrollTop / layout.expanded.searchHeight,
+//     1
+//   );
+
+//   const titleDx =
+//     layout.collapsed.title.x -
+//     layout.expanded.title.x;
+
+//   const titleDy =
+//     layout.collapsed.title.y -
+//     layout.expanded.title.y;
+
+//   const iconDx =
+//     layout.collapsed.icon.x -
+//     layout.expanded.icon.x;
+
+//   const iconDy =
+//     layout.collapsed.icon.y -
+//     layout.expanded.icon.y;
+
+//   title.style.transform =
+//     `translate(${titleDx * progress}px, ${titleDy * progress}px)`;
+
+//   icon.style.transform =
+//     `translate(${iconDx * progress}px, ${iconDy * progress}px)`;
+
+//   searchbar.style.height =
+//     `${layout.expanded.searchHeight * (1 - progress)}px`;
+
+//   searchbar.style.opacity = 1 - progress;
+// });

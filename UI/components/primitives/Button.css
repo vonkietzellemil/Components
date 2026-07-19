@@ -93,8 +93,9 @@
 
 .icon-button {
 
-  width:42px;
-  height:42px;
+  width: 42px;
+  height: 42px;
+  padding: var(--space-2);
 
   display:flex;
   align-items:center;
@@ -109,26 +110,12 @@
   cursor:pointer;
 
 }
+.icon-button svg {
 
+  width: 100%;
+  height: 100%;
 
-.icon-button:hover {
-
-  background:var(--background-200);
-
-}
-
-.button--floating {
-  background-color: transparent;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px); /* For Safari support */
-  
-  color: var(--color-text);
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-
-  border: var(--border-default);
+  fill: var(--color-primary);
 }
 
 .button--floating {
@@ -168,8 +155,55 @@
   transition: background-color 0.2s ease;
 }
 
+
+
+
+
+
+.liquid-glass {
+  /* The frosted glass blur */
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px); /* For Safari support *
+  
+  /* Subtle border to catch the light, mimicking Apple's style */
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-top: 1px solid rgba(255, 255, 255, 0.3);
+  
+  /* Text color that adapts well */
+  color: var(--color-text);
+  
+  /* Smooth transitions for hover effects */
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+  
+  /* A semi-transparent white acts as the dynamic tint */
+  background-color: rgba(255, 255, 255, 0.15); 
+}
+
 /* Hover effect that intensifies the glass look */
-.button--floating:hover {
-  background-color: rgba(255, 255, 255, 0.25);
+/* .liquid-glass:hover,
+.floating-actions-menu button:hover {
   border-color: rgba(255, 255, 255, 0.4);
+  border-top-color: rgba(255, 255, 255, 0.5);
+} */
+
+
+.floating-actions-menu-container {
+  display: flex;
+  gap: var(--space-3);
+
+  position: fixed;
+  bottom: var(--space-4);
+  right: var(--space-2);
+  left: var(--space-2);
+}
+
+.floating-actions-menu {
+  border-radius: var(--radius-pill);
+  flex: 1;
+}
+
+.floating-actions-menu button {
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+  border-radius: var(--radius-pill);
+  color: var(--color-text);
 }
