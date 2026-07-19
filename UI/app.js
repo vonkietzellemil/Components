@@ -24,9 +24,9 @@ overlay.addEventListener("click", () => {
 
 const borderRadius = 20;
 const scale = 0.75;
-const gap = 16;
+const gap = 20;
 const bgScale = scale * 0.9;
-const bgOpacity = 0.3;
+const bgOpacity = 0.6;
 
 function getBackgroundOffset() {
   const lostLeft = pagesContainer.clientWidth * (1 - bgScale) / 2;

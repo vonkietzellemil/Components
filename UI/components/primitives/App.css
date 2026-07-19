@@ -49,7 +49,7 @@ html, body, #App {
   inset: 0;
   z-index: calc(var(--z-sidebar) + 50);
 
-  background: rgba(255,255,255,0.08);
+  background: color-mix(in srgb, var(--color-background) 60%, transparent);
 
   border-radius: 20px;
 
