@@ -26,6 +26,13 @@ html, body, #App {
 }
 
 
+
+
+
+/* =====================================================
+Pages and overlay/ background when opening sidebar
+===================================================== */
+
 #pageOverlay {
   position: fixed;
   inset: 0;
@@ -68,16 +75,19 @@ html, body, #App {
   height: 100%;
   box-sizing: border-box;
   position: relative;
+  overflow: hidden;
 
   transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.05), border-radius 0.5s ease-out;
 }
 
 .page {
   height: 100%;
-  display: none;
+  display: flex;
   flex-direction: column;
+  position: absolute;
+  background-color: var(--color-background);
+  inset: 0;
 }
-
 
 .page-header {
   display: flex;
@@ -107,34 +117,38 @@ html, body, #App {
 }
 
 
-#grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 80px;
-  row-gap: 120px;
-  flex: 1;
-
-  overflow-y: auto;
-  overflow-x: hidden;
+/* On ceation of page */
+.page-enter {
+  transform: translateX(100%);
 }
 
-#grid > div {
-  display: flex;
-  align-items: center;
-  flex-direction: column;
+/* Slide page into screen */
+.page-enter-active {
+  transform: translateX(0);
+  transition: transform 300ms ease;
 }
 
-#grid > div .header {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  
-  margin: 0;
-  margin-bottom: var(--space-3);
+/* Apply to the current behind page */
+.page-behind {
+  transform: translateX(-35%);
+  transition: transform 300ms ease;
 }
+
+
+/* Close current page */
+.page-exit-active {
+  transform: translateX(100%);
+  transition: transform 300ms ease;
+}
+/* Go to Previous Page */
+.page-return {
+  transform: translateX(0);
+  transition: transform 300ms ease;
+}
+
 
 /* ===============================
-Sidebar
+Sidebar styles
 =============================== */
 
 .sidebar {
@@ -162,4 +176,41 @@ Sidebar
   display:flex;
   flex-direction: column;
   
+}
+
+
+
+
+
+
+
+
+/* =====================================================
+Temporary Grid for components
+===================================================== */
+
+#grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 80px;
+  row-gap: 120px;
+  flex: 1;
+
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+#grid > div {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+}
+
+#grid > div .header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  
+  margin: 0;
+  margin-bottom: var(--space-3);
 }

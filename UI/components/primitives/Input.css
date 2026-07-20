@@ -21,8 +21,9 @@
 
 .input {
 
-  height:42px;
+  height: 42px;
 
+  font-size: var(--text-md);
   padding:
   0 var(--space-3);
 
@@ -74,30 +75,7 @@
 
 
 .searchbar {
-
-  height: 42px;
-
-  padding:
-  0 var(--space-3);
-
-
-  border:
-  var(--border-default);
-
-
-  border-radius:
-  var(--radius-pill);
-
-
-  background:
-  var(--color-surface);
-
-
-  color:
-  var(--color-text);
-
-
-  font-family: inherit;
-
+  font-size: var(--text-lg);
+  border-radius: var(--radius-pill);
 
 }

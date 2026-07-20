@@ -118,42 +118,7 @@
   fill: var(--color-primary);
 }
 
-.button--floating {
-  /* The frosted glass blur */
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px); /* For Safari support */
-  
-  /* Semi-transparent white background */
-  background-color: rgba(255, 255, 255, 0.15);
-  
-  /* Subtle border to catch the light, mimicking Apple's style */
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  
-  /* Text color that adapts well */
-  color: var(--color-text);
-  
-  /* Smooth transitions for hover effects */
-  transition: background-color 0.3s ease, border-color 0.3s ease;
 
-
-
-
-   /* Crucial for the Apple glass look */
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  
-  /* Hard-light pushes white over dark backgrounds, making them lighter */
-  mix-blend-mode: hard-light; 
-  
-  /* A semi-transparent white acts as the dynamic tint */
-  background-color: rgba(255, 255, 255, 0.25); 
-  
-  /* Subtle border that stays visible on both sides */
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  color: var(--color-text);
-  
-  transition: background-color 0.2s ease;
-}
 
 
 
@@ -187,25 +152,28 @@
 } */
 
 
-.floating-actions-menu-container {
-  display: flex;
-  gap: var(--space-3);
-
-  position: fixed;
-  bottom: var(--space-4);
-  right: var(--space-2);
-  left: var(--space-2);
-}
-
 .floating-actions-menu {
   display: flex;
   border-radius: var(--radius-pill);
-  flex: 1;
+
+  position: fixed;
+  bottom: var(--space-4);
+  left: var(--space-2);
 }
 
 .floating-actions-menu button {
-  flex: 1;
+  height: 44px;
+  min-width: 44px;
+  box-sizing: border-box;
   transition: background-color 0.3s ease, border-color 0.3s ease;
   border-radius: var(--radius-pill);
   color: var(--color-text);
+}
+
+.floating-action-button {
+  position: fixed;
+  width: 46px; /* Has to be taller than the menu btns because of box-sizing border box it also has its own border*/
+  height: 46px;
+  bottom: var(--space-4);
+  right: var(--space-2);
 }
