@@ -33,7 +33,7 @@ function getPreviousPage() { return stack[stack.length - 2]; }
 let isTransitioning = false;
 
 
-showPage(componentsPage);
+showPage(mainTestPage);
 
 function showPage(page) {
   allPages.forEach(page => page.style.display = "none");
@@ -82,7 +82,11 @@ function popPage() {
 
   const currentPage = getCurrentPage();
   const previousPage = getPreviousPage();
-  
+
+  currentPage.style.transform = "";
+  previousPage.style.transform = "";
+  console.log(currentPage, previousPage)
+
   currentPage.classList.add("page-exit-active");
   previousPage.classList.add("page-return");
 
@@ -93,11 +97,25 @@ function popPage() {
     );
   }, 300);
 
-  currentPage.addEventListener("transitionend", () => {
+  setTimeout(() => {
     currentPage.remove();
+    console.log("removing", currentPage);
     stack.pop();
     isTransitioning = false;
-  }, { once: true });
+  }, 300);
+}
+
+function snapBack() {
+  const currentPage = getCurrentPage();
+  const previousPage = getPreviousPage();
+
+  currentPage.style.transform = "";
+
+  // pagesBackground.style.opacity = "0";
+  // pagesBackground.style.transform =
+  //   `translateX(0) scale(${bgScale})`;
+
+  // overlay.classList.remove("open");
 }
 
 function createPage ({
@@ -194,6 +212,8 @@ pagesContainer.addEventListener("pointerdown", e => {
 pagesContainer.addEventListener("pointermove", e => {
   if (!pointerDown) return;
 
+  pagesContainer.setPointerCapture(e.pointerId);
+
   const delta = e.clientX - startX;
 
   dragging = true;
@@ -233,16 +253,12 @@ pagesContainer.addEventListener("pointermove", e => {
 
   } else if (stack.length === 1) {
     console.log("Sidebar opening")
-    // Open / Close Sidebar
+    // Open Sidebar
     const sidebarWidth = sidebar.clientWidth;
 
-    const progress = Math.max(
-      0,
-      Math.min(
-        1,
-        1 + delta / sidebarWidth
-      )
-    );
+    const progress = Math.min(1, Math.max(0, delta / sidebarWidth));
+
+    console.log(progress);
 
     pagesContainer.style.transform = `
       translateX(${getPageOffset() * progress}px)
@@ -288,6 +304,10 @@ function finishDrag(e) {
     return;
   }
 
+  if (pagesContainer.hasPointerCapture(e.pointerId)) {
+    pagesContainer.releasePointerCapture(e.pointerId);
+  }
+
   pointerDown = false;
   dragging = false;
 
@@ -295,17 +315,13 @@ function finishDrag(e) {
 
   const threshold = window.innerWidth * 0.3;
 
-  if (stack.length === 1 || sidebarIsOpen) {
-    let startProgress = 0;
-
-    startProgress = sidebarIsOpen ? 1 : 0;
+  if (sidebarIsOpen) {
+    
+    const sidebarWidth = sidebar.clientWidth;
 
     const progress = Math.max(
       0,
-      Math.min(
-        1,
-        startProgress + delta / sidebar.clientWidth
-      )
+      Math.min(1, (sidebarWidth + delta) / sidebarWidth)
     );
 
     if (progress > 0.5) {
@@ -313,17 +329,32 @@ function finishDrag(e) {
     } else {
       closeSidebar();
     }
-  } else {
+
+  } else if (stack.length === 1) {
+
     if (delta > threshold) {
+      openSidebar();
+    } else {
+      closeSidebar();
+    }
+
+  } else {
+
+    if (delta > threshold) {
+      console.log("popping page")
       popPage();
     } else {
       snapBack();
     }
+
   }
 }
 
 pagesContainer.addEventListener("pointerup", finishDrag);
-pagesContainer.addEventListener("pointercancel", finishDrag);
+pagesContainer.addEventListener("pointercancel", e => {
+  console.log("pointercancel");
+  finishDrag(e);
+});
 
 
 
