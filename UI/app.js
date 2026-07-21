@@ -67,9 +67,10 @@ function pushPage(pageEl) {
     pageEl.classList.add("page-enter-active");
   });
 
-
   setTimeout(() => {
-      isTransitioning = false;
+    isTransitioning = false;
+
+    pageEl.classList.remove("page-enter", "page-enter-active");
   }, 300);
 }
 
@@ -260,16 +261,12 @@ pagesContainer.addEventListener("pointermove", e => {
 
       // Open / Close Sidebar
       const sidebarWidth = sidebar.clientWidth;
-
       const startProgress = sidebarIsOpen ? 1 : 0;
-      const direction = sidebarIsOpen ? -1 : 1;
 
       const dragProgress = Math.max(
         0,
-        Math.min(1, startProgress + direction * delta / sidebarWidth)
+        Math.min(1, startProgress + delta / sidebarWidth)
       );
-
-      console.log(dragProgress);
 
       pagesContainer.style.transform =`
         translateX(${getPageOffset() * dragProgress}px)
@@ -300,7 +297,6 @@ pagesContainer.addEventListener("pointermove", e => {
 
       const currentPage = getCurrentPage();
 
-      currentPage.style.transition = "none";
       currentPage.style.transform =
         `translateX(${delta}px)`;
 
