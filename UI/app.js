@@ -33,7 +33,7 @@ function getPreviousPage() { return stack[stack.length - 2]; }
 let isTransitioning = false;
 
 
-showPage(mainTestPage);
+showPage(componentsPage);
 
 function showPage(page) {
   allPages.forEach(page => page.style.display = "none");
@@ -45,9 +45,7 @@ function showPage(page) {
 
 
 
-function pushPage(pageEl) {
-  console.log("button clicked")
-  
+function pushPage(pageEl) {  
   if (isTransitioning) return;
 
   pagesContainer.appendChild(pageEl);
@@ -203,98 +201,116 @@ function getPageOffset() {
 let pointerDown = false;
 let dragging = false;
 let startX = 0;
+let startY = 0;
+let dragMode = 0;
+let dragDirection = null; // null | "horizontal" | "vertical"
 
 pagesContainer.addEventListener("pointerdown", e => {
   pointerDown = true;
   startX = e.clientX;
+  startY = e.clientY;
+  dragDirection = null;
+
+  pagesContainer.setPointerCapture(e.pointerId);
+
+  if (stack.length === 1) {
+    dragMode = "sidebar";
+  } else {
+    dragMode = "popPage";
+  }
 });
 
 pagesContainer.addEventListener("pointermove", e => {
   if (!pointerDown) return;
 
-  pagesContainer.setPointerCapture(e.pointerId);
-
   const delta = e.clientX - startX;
 
-  dragging = true;
-  // if (Math.abs(delta) > 10) {
-  //   dragging = true;
-  // }
+  if (Math.abs(delta) > 10) {
+    dragging = true;
+  }
   
   if (!dragging) return;
   if (delta === 0) return;
 
-  if (sidebarIsOpen) {
-    console.log("Sidebar closing")
-    // Open / Close Sidebar
-    const sidebarWidth = sidebar.clientWidth;
 
-    const progress = Math.max(
-      0,
-      Math.min(1, (sidebarWidth + delta) / sidebarWidth)
-    );
+  const dx = e.clientX - startX;
+  const dy = e.clientY - startY;
 
-    pagesContainer.style.transform =`
-      translateX(${getPageOffset() * progress}px)
-      scale(${1 + progress * (scale - 1)})
-    `;
-    // rotateY(${-rotate * progress}deg)
-    pagesContainer.style.borderRadius = borderRadius * progress + "px";
+  if (dragDirection === null) {
+    if (Math.hypot(dx, dy) < 10) return;
+
+    dragDirection =
+      Math.abs(dx) > Math.abs(dy)
+        ? "horizontal"
+        : "vertical";
+  }
+
+  if (dragDirection === "vertical") {
+    console.log("vertical")
+    return; // let the browser scroll
+  }
+
+  // Horizontal gesture:
+  e.preventDefault();
+
+  
+
+  switch (dragMode) {
+    case "sidebar":
+
+      // Open / Close Sidebar
+      const sidebarWidth = sidebar.clientWidth;
+
+      const startProgress = sidebarIsOpen ? 1 : 0;
+      const direction = sidebarIsOpen ? -1 : 1;
+
+      const dragProgress = Math.max(
+        0,
+        Math.min(1, startProgress + direction * delta / sidebarWidth)
+      );
+
+      console.log(dragProgress);
+
+      pagesContainer.style.transform =`
+        translateX(${getPageOffset() * dragProgress}px)
+        scale(${1 + dragProgress * (scale - 1)})
+      `;
+      // rotateY(${-rotate * dragProgress}deg)
+      pagesContainer.style.borderRadius = borderRadius * dragProgress + "px";
 
 
-    const opacity = progress * bgOpacity;
+      const opacity = dragProgress * bgOpacity;
 
-    pagesBackground.style.transform = `
-      translateX(${getBackgroundOffset() * progress}px)
-      scale(${1 + progress * (bgScale - 1)})
-    `;
+      pagesBackground.style.transform = `
+        translateX(${getBackgroundOffset() * dragProgress}px)
+        scale(${1 + dragProgress * (bgScale - 1)})
+      `;
 
-    pagesBackground.style.opacity = opacity;
+      pagesBackground.style.opacity = opacity;
 
-  } else if (stack.length === 1) {
-    console.log("Sidebar opening")
-    // Open Sidebar
-    const sidebarWidth = sidebar.clientWidth;
+      break;
 
-    const progress = Math.min(1, Math.max(0, delta / sidebarWidth));
+    case "popPage":
+      if (delta <= 0) return; // only allow right swipe
 
-    console.log(progress);
+      const progress = Math.min(
+        1,
+        delta / window.innerWidth
+      );
 
-    pagesContainer.style.transform = `
-      translateX(${getPageOffset() * progress}px)
-      scale(${1 + progress * (scale - 1)})
-    `;
+      const currentPage = getCurrentPage();
 
-    pagesContainer.style.borderRadius =
-      borderRadius * progress + "px";
+      currentPage.style.transition = "none";
+      currentPage.style.transform =
+        `translateX(${delta}px)`;
 
-    pagesBackground.style.transform = `
-      translateX(${getBackgroundOffset() * progress}px)
-      scale(${1 + progress * (bgScale - 1)})
-    `;
+      const previousPage = getPreviousPage();
 
-    pagesBackground.style.opacity =
-      progress * bgOpacity;
+      // Optional parallax
+      previousPage.style.transform =
+        `translateX(${-50 + progress * 50}px)`;
     
-  } else {
-    if (delta <= 0) return; // only allow right swipe
-
-    const progress = Math.min(
-      1,
-      delta / window.innerWidth
-    );
-
-    const currentPage = getCurrentPage();
-
-    currentPage.style.transition = "none";
-    currentPage.style.transform =
-      `translateX(${delta}px)`;
-
-    const previousPage = getPreviousPage();
-
-    // Optional parallax
-    previousPage.style.transform =
-      `translateX(${-50 + progress * 50}px)`;
+      break;
   }
 });
 
@@ -341,7 +357,6 @@ function finishDrag(e) {
   } else {
 
     if (delta > threshold) {
-      console.log("popping page")
       popPage();
     } else {
       snapBack();
