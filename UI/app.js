@@ -204,8 +204,8 @@ pagesContainer.addEventListener("pointermove", e => {
   if (!dragging) return;
   if (delta === 0) return;
 
-  if (stack.length === 1) {
-    console.log("Sidebar")
+  if (sidebarIsOpen) {
+    console.log("Sidebar closing")
     // Open / Close Sidebar
     const sidebarWidth = sidebar.clientWidth;
 
@@ -231,12 +231,46 @@ pagesContainer.addEventListener("pointermove", e => {
 
     pagesBackground.style.opacity = opacity;
 
+  } else if (stack.length === 1) {
+    console.log("Sidebar opening")
+    // Open / Close Sidebar
+    const sidebarWidth = sidebar.clientWidth;
+
+    const progress = Math.max(
+      0,
+      Math.min(
+        1,
+        1 + delta / sidebarWidth
+      )
+    );
+
+    pagesContainer.style.transform = `
+      translateX(${getPageOffset() * progress}px)
+      scale(${1 + progress * (scale - 1)})
+    `;
+
+    pagesContainer.style.borderRadius =
+      borderRadius * progress + "px";
+
+    pagesBackground.style.transform = `
+      translateX(${getBackgroundOffset() * progress}px)
+      scale(${1 + progress * (bgScale - 1)})
+    `;
+
+    pagesBackground.style.opacity =
+      progress * bgOpacity;
     
   } else {
     if (delta <= 0) return; // only allow right swipe
 
+    const progress = Math.min(
+      1,
+      delta / window.innerWidth
+    );
+
     const currentPage = getCurrentPage();
 
+    currentPage.style.transition = "none";
     currentPage.style.transform =
       `translateX(${delta}px)`;
 
@@ -244,7 +278,7 @@ pagesContainer.addEventListener("pointermove", e => {
 
     // Optional parallax
     previousPage.style.transform =
-      `translateX(${(-100 + delta * 0.35)}px)`;
+      `translateX(${-50 + progress * 50}px)`;
   }
 });
 
@@ -259,14 +293,32 @@ function finishDrag(e) {
 
   const delta = e.clientX - startX;
 
-  if (stack.length === 1) {
-    if (delta < -sidebar.clientWidth * 0.3) {
-      closeSidebar();
-    } else {
+  const threshold = window.innerWidth * 0.3;
+
+  if (stack.length === 1 || sidebarIsOpen) {
+    let startProgress = 0;
+
+    startProgress = sidebarIsOpen ? 1 : 0;
+
+    const progress = Math.max(
+      0,
+      Math.min(
+        1,
+        startProgress + delta / sidebar.clientWidth
+      )
+    );
+
+    if (progress > 0.5) {
       openSidebar();
+    } else {
+      closeSidebar();
     }
   } else {
-    
+    if (delta > threshold) {
+      popPage();
+    } else {
+      snapBack();
+    }
   }
 }
 
