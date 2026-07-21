@@ -420,6 +420,8 @@ function closeSidebar() {
 
 sidebar.querySelectorAll(".sidebar-nav-option").forEach(option => {
   option.addEventListener("click", () => {
+    stack.length = 0;
+
     showPage(document.querySelector("#" + option.dataset.page));
     closeSidebar();
   });
