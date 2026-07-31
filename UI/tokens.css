@@ -137,10 +137,11 @@ Z-index
 ================================= */
 
 :root {
-  --z-sidebar: -100;
-  --z-dropdown: 100;
-  --z-overlay: 150;
-  --z-modal: 200;
+  --z-sidebar: 0;
+  --z-app: 100;
+  --z-dropdown: 150;
+  --z-overlay: 200;
+  --z-modal: 250;
   --z-toast: 300;
   --z-tooltip: 400;
 }
@@ -155,6 +156,15 @@ Animation
   --duration-slow: 400ms;
 
   --ease-default: ease;
+
+  --ease-in: cubic-bezier(0.55, 0, 1, 0.45);
+  --ease-out: cubic-bezier(0.25, 1, 0.5, 1);
+  --ease-in-out: cubic-bezier(0.37, 0, 0.63, 1);
+
+  --ease-main: cubic-bezier(0.4, 0, 0.2, 1); /* Standard Material-Ease */
+  --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1); /* Schickes Nachfedern */
+  --ease-elastic: cubic-bezier(0.68, -0.6, 0.32, 1.6);
+
 }
 
 /* =================================   
@@ -274,6 +284,7 @@ Colors
 
   --border: gray;
 
+  --linearBackgroundSecondary: linear-gradient(var(--color-background), var(--color-secondary));
   --linearPrimarySecondary: linear-gradient(#8e8cd4, #dddbff);
   --linearPrimaryAccent: linear-gradient(#8e8cd4, #f28fff);
   --linearSecondaryAccent: linear-gradient(#dddbff, #f28fff);
