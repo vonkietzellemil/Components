@@ -1,3 +1,7 @@
+* {
+  margin: 0;
+}
+
 html, body {
 
   font-family:
@@ -10,7 +14,17 @@ html, body {
   var(--leading-normal);
 
   color: var(--color-text);
-  margin: 0;
+
+
+  -webkit-user-select: none; /* iOS/Safari */
+  -webkit-touch-callout: none; /* iOS Long press menu */
+  -webkit-user-drag: none;
+  
+  user-drag: none;
+  user-select: none;
+
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* Internet Explorer 10+ */
 }
 
 html, body, #App {
@@ -26,6 +40,14 @@ html, body, #App {
 }
 
 
+
+/* Textauswahl und Editierbarkeit explizit für Eingabefelder erlauben */
+input, textarea {
+  -webkit-user-select: text; /* Wichtig für iOS/Safari */
+  -moz-user-select: text;
+  -ms-user-select: text;
+  user-select: text;
+}
 
 
 

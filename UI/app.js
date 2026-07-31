@@ -18,19 +18,141 @@ const overlay = document.getElementById("pageOverlay");
 
 
 
+// ========================================================
+// Push/Pop Pages
+// ========================================================
+
+const pagesManager = {
+  stack: [],
+  getCurrentPage() { return this.stack[this.stack.length - 1]; },
+  getPreviousPage() { return this.stack[this.stack.length - 2]; },
+  isTransitioning: false,
+
+  createPage ({
+    title,
+  }) {
+    const newPage = document.createElement("div");
+    newPage.classList.add("page");
+
+    newPage.innerHTML = `
+      <div class="page-header">
+            
+        <h2 class="title">${title + this.stack.length}</h2>
+        
+        <div class="searchbar-container">
+          <button class="open-sidebar-button button icon-button" onclick="pagesManager.pop()">
+            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="M640-80 240-480l400-400 71 71-329 329 329 329-71 71Z"/></svg>
+          </button>
+          <input class="input searchbar" placeholder="Search">
+        </div>
+      </div>
+
+      <div class="floating-actions-menu liquid-glass">
+        <button class="button icon-button">
+          <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="M320-440v-287L217-624l-57-56 200-200 200 200-57 56-103-103v287h-80ZM600-80 400-280l57-56 103 103v-287h80v287l103-103 57 56L600-80Z"/></svg>
+        </button>
+
+        <button class="button icon-button">
+          <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="M120-240v-80h240v80H120Zm0-200v-80h480v80H120Zm0-200v-80h720v80H120Z"/></svg>
+        </button>
+
+        <button class="button icon-button">
+          <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="M440-160q-17 0-28.5-11.5T400-200v-240L168-736q-15-20-4.5-42t36.5-22h560q26 0 36.5 22t-4.5 42L560-440v240q0 17-11.5 28.5T520-160h-80Zm40-308 198-252H282l198 252Zm0 0Z"/></svg>
+        </button>
+
+        <button class="button icon-button">
+          <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="M784-120 532-372q-30 24-69 38t-83 14q-109 0-184.5-75.5T120-580q0-109 75.5-184.5T380-840q109 0 184.5 75.5T640-580q0 44-14 83t-38 69l252 252-56 56ZM380-400q75 0 127.5-52.5T560-580q0-75-52.5-127.5T380-760q-75 0-127.5 52.5T200-580q0 75 52.5 127.5T380-400Z"/></svg>
+        </button>
+      </div>
+
+      <button class="button icon-button liquid-glass floating-action-button" onclick="pagesManager.push( createPage({ title: 'Page' }) )">
+        <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z"/></svg>
+      </button>
+    `;
+
+    return newPage;
+  },
+
+  push(pageEl, animation=true) {  
+    if (this.isTransitioning) return;
+
+    pagesContainer.appendChild(pageEl);
 
 
+    const currentPage = this.getCurrentPage();
+    
+    this.stack.push(pageEl);
+    if (!currentPage) return;
+
+    this.isTransitioning = true;
+
+    currentPage.classList.add("page-behind");
+
+    if (!animation) return;
+
+    pageEl.classList.add("page-enter");
+
+    requestAnimationFrame(() => {
+      currentPage && currentPage.classList.add("page-behind");
+      pageEl.classList.add("page-enter-active");
+    });
+
+    setTimeout(() => {
+      this.isTransitioning = false;
+
+      pageEl.classList.remove("page-enter", "page-enter-active");
+    }, 300);
+  },
+
+  pop(animation=true) {
+
+    if (this.isTransitioning) return;
+    this.isTransitioning = true;
+
+    const currentPage = this.getCurrentPage();
+    const previousPage = this.getPreviousPage();
+
+    currentPage.style.transform = "";
+    previousPage.style.transform = "";
+    
+    if (!animation) return;
+
+    currentPage.classList.add("page-exit-active");
+    previousPage.classList.add("page-return");
+
+    setTimeout(() => {
+      previousPage.classList.remove(
+        "page-behind",
+        "page-return"
+      );
+    }, 300);
+
+    setTimeout(() => {
+      currentPage.remove();
+      this.stack.pop();
+      isTransitioning = false;
+    }, 300);
+  },
+
+  snapBack() {
+    const currentPage = this.getCurrentPage();
+    const previousPage = this.getPreviousPage();
+
+    currentPage.style.transform = "";
+
+    // pagesBackground.style.opacity = "0";
+    // pagesBackground.style.transform =
+    //   `translateX(0) scale(${bgScale})`;
+
+    // overlay.classList.remove("open");
+  },
+};
 
 const pages = {
   mainTestPage: {
     title: "Title",
   },
 }
-
-const stack = [];
-function getCurrentPage() { return stack[stack.length - 1]; }
-function getPreviousPage() { return stack[stack.length - 2]; }
-let isTransitioning = false;
 
 
 showPage(componentsPage);
@@ -40,140 +162,191 @@ function showPage(page) {
 
   page.style.display = "flex";
 
-  pushPage(page);
+  pagesManager.push(page);
 }
 
 
 
-function pushPage(pageEl) {  
-  if (isTransitioning) return;
-
-  pagesContainer.appendChild(pageEl);
 
 
-  const currentPage = getCurrentPage();
-  
-  stack.push(pageEl);
-  if (!currentPage) return;
 
-  isTransitioning = true;
+// ========================================================
+// Bottom Sheet
+// ========================================================
+const bottomSheetManager = {
+  stack: [],
+  getCurrentSheet() { return this.stack[this.stack.length - 1]; },
+  getPreviousSheet() { return this.stack[this.stack.length - 2]; },
+  isTransitioning: false,
 
-  currentPage.classList.add("page-behind");
+  createBottomSheet ({
+    title,
+  }) {
+    const newSheet = document.createElement("div");
+    newSheet.classList.add("sheet", "hidden");
 
-  pageEl.classList.add("page-enter");
-
-  requestAnimationFrame(() => {
-    currentPage && currentPage.classList.add("page-behind");
-    pageEl.classList.add("page-enter-active");
-  });
-
-  setTimeout(() => {
-    isTransitioning = false;
-
-    pageEl.classList.remove("page-enter", "page-enter-active");
-  }, 300);
-}
-
-function popPage() {
-
-  if (isTransitioning) return;
-  isTransitioning = true;
-
-  const currentPage = getCurrentPage();
-  const previousPage = getPreviousPage();
-
-  currentPage.style.transform = "";
-  previousPage.style.transform = "";
-  console.log(currentPage, previousPage)
-
-  currentPage.classList.add("page-exit-active");
-  previousPage.classList.add("page-return");
-
-  setTimeout(() => {
-    previousPage.classList.remove(
-      "page-behind",
-      "page-return"
-    );
-  }, 300);
-
-  setTimeout(() => {
-    currentPage.remove();
-    console.log("removing", currentPage);
-    stack.pop();
-    isTransitioning = false;
-  }, 300);
-}
-
-function snapBack() {
-  const currentPage = getCurrentPage();
-  const previousPage = getPreviousPage();
-
-  currentPage.style.transform = "";
-
-  // pagesBackground.style.opacity = "0";
-  // pagesBackground.style.transform =
-  //   `translateX(0) scale(${bgScale})`;
-
-  // overlay.classList.remove("open");
-}
-
-function createPage ({
- title,
-}) {
-  const newPage = document.createElement("div");
-  newPage.classList.add("page");
-
-  newPage.innerHTML = `
-    <div class="page-header">
-          
-      <h2 class="title">${title + stack.length}</h2>
+    newSheet.innerHTML = `
       
-      <div class="searchbar-container">
-        <button class="open-sidebar-button button icon-button" onclick="popPage()">
-          <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="M640-80 240-480l400-400 71 71-329 329 329 329-71 71Z"/></svg>
-        </button>
-        <input class="input searchbar" placeholder="Search">
+      <div class="sheet__backdrop"></div>
+
+
+      <div class="sheet__content">
+
+        <div class="sheet__handle"></div>
+
+          <h2>
+            ${title}
+          </h2>
+
+          <p>
+            Content...
+          </p>
+
+          <button class="button button--secondary">Cancel</button>
+
+        </div>
       </div>
-    </div>
+    `;
 
-    <div class="floating-actions-menu liquid-glass">
-      <button class="button icon-button">
-        <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="M320-440v-287L217-624l-57-56 200-200 200 200-57 56-103-103v287h-80ZM600-80 400-280l57-56 103 103v-287h80v287l103-103 57 56L600-80Z"/></svg>
-      </button>
+    newSheet.addEventListener("click", e => {
+      this.pop();
+    });
 
-      <button class="button icon-button">
-        <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="M120-240v-80h240v80H120Zm0-200v-80h480v80H120Zm0-200v-80h720v80H120Z"/></svg>
-      </button>
+    this.addDragPhysics(newSheet);
 
-      <button class="button icon-button">
-        <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="M440-160q-17 0-28.5-11.5T400-200v-240L168-736q-15-20-4.5-42t36.5-22h560q26 0 36.5 22t-4.5 42L560-440v240q0 17-11.5 28.5T520-160h-80Zm40-308 198-252H282l198 252Zm0 0Z"/></svg>
-      </button>
+    return newSheet;
+  },
 
-      <button class="button icon-button">
-        <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="M784-120 532-372q-30 24-69 38t-83 14q-109 0-184.5-75.5T120-580q0-109 75.5-184.5T380-840q109 0 184.5 75.5T640-580q0 44-14 83t-38 69l252 252-56 56ZM380-400q75 0 127.5-52.5T560-580q0-75-52.5-127.5T380-760q-75 0-127.5 52.5T200-580q0 75 52.5 127.5T380-400Z"/></svg>
-      </button>
-    </div>
+  addDragPhysics(sheetEl) {
+    const handle = sheetEl.querySelector(".sheet__handle");
+    const backdrop = sheetEl.querySelector(".sheet__backdrop");
+    const content = sheetEl.querySelector(".sheet__content");
+    if (!handle) return;
 
-    <button class="button icon-button liquid-glass floating-action-button" onclick="pushPage( createPage({ title: 'Page' }) )">
-      <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z"/></svg>
-    </button>
-  `;
+    let startY = 0;
+    let currentY = 0;
+    let velocity = 0;
+    let lastY = 0;
+    let lastTime = 0;
+    let dragging = false;
 
-  return newPage;
-}
+    const maxDragDistance = 300;
+
+    handle.addEventListener("pointerdown", (e) => {
+      dragging = true;
+      startY = e.clientY;
+      lastY = e.clientY;
+      lastTime = performance.now();
+
+      sheetEl.style.transition = "none";
+      handle.setPointerCapture(e.pointerId);
+    });
+
+    handle.addEventListener("pointermove", (e) => {
+      if (!dragging) return;
+
+      const now = performance.now();
+      const dy = e.clientY - lastY;
+      const dt = now - lastTime;
+
+      velocity = dy / dt;
+
+      lastY = e.clientY;
+      lastTime = now;
+
+      currentY = Math.max(0, e.clientY - startY);
+
+      const dragProgress = Math.min(1, currentY / maxDragDistance);
+
+      console.log(dragProgress)
+
+      content.style.transform = `translateY(${currentY}px)`;
+      backdrop.style.opacity = 1 - dragProgress;
+    });
+
+    handle.addEventListener("pointerup", () => {
+      if (!dragging) return;
+      dragging = false;
+
+      const shouldClose = currentY > 140 || velocity > 0.9;
+
+      if (shouldClose) {
+        console.log("closing")
+        this.pop();
+      } else {
+        content.style.transform = "translateY(0)";
+        backdrop.style.opacity = `1`;
+      }
+    });
+  },
+
+  push(sheetEl) {  
+    if (this.isTransitioning) return;
+
+    document.body.appendChild(sheetEl);
+    
+    this.stack.push(sheetEl);
+
+    this.isTransitioning = true;
+
+    // currentPage.classList.add("page-behind");
+
+    requestAnimationFrame(() => {
+      sheetEl.classList.remove("hidden");
+    });
+
+    setTimeout(() => {
+      this.isTransitioning = false;
+    }, 300);
+  },
+
+  pop() {
+
+    if (this.isTransitioning) return;
+    this.isTransitioning = true;
+
+    const currentSheet = this.getCurrentSheet();
+
+    currentSheet.querySelector(".sheet__content").style.transform = "translateY(100%)";
+    // currentSheet.classList.add("hidden");
+
+    setTimeout(() => {
+      currentSheet.remove();
+      this.stack.pop();
+      this.isTransitioning = false;
+    }, 400);
+  },
+
+  snapBack() {
+    const currentPage = this.getCurrentPage();
+    const previousPage = this.getPreviousPage();
+
+    currentPage.style.transform = "";
+
+    // pagesBackground.style.opacity = "0";
+    // pagesBackground.style.transform =
+    //   `translateX(0) scale(${bgScale})`;
+
+    // overlay.classList.remove("open");
+  },
+};
+
+
+bottomSheetManager.push(bottomSheetManager.createBottomSheet({ title: 'Hola die faldwee' }));
+
+
+function isAnyInputFocused() { return ['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName); }
 
 
 
 
-
-
-
-
+// ========================================================
+// Swipe to go back / Sidebar logic
+// ========================================================
 
 overlay.addEventListener("click", () => {
   closeSidebar();
 });
-
 
 // const rotate = 25;
 
@@ -207,6 +380,11 @@ let dragMode = 0;
 let dragDirection = null; // null | "horizontal" | "vertical"
 
 pagesContainer.addEventListener("pointerdown", e => {
+  // Check for input  
+  if (isAnyInputFocused()) {
+    return; 
+  }
+
   pointerDown = true;
   startX = e.clientX;
   startY = e.clientY;
@@ -214,7 +392,7 @@ pagesContainer.addEventListener("pointerdown", e => {
 
   pagesContainer.setPointerCapture(e.pointerId);
 
-  if (stack.length === 1) {
+  if (pagesManager.stack.length === 1) {
     dragMode = "sidebar";
   } else {
     dragMode = "popPage";
@@ -229,7 +407,7 @@ pagesContainer.addEventListener("pointermove", e => {
   if (Math.abs(delta) > 10) {
     dragging = true;
   }
-  
+
   if (!dragging) return;
   if (delta === 0) return;
 
@@ -251,10 +429,7 @@ pagesContainer.addEventListener("pointermove", e => {
     return; // let the browser scroll
   }
 
-  // Horizontal gesture:
-  e.preventDefault();
-
-  
+  e.preventDefault();  
 
   switch (dragMode) {
     case "sidebar":
@@ -295,12 +470,12 @@ pagesContainer.addEventListener("pointermove", e => {
         delta / window.innerWidth
       );
 
-      const currentPage = getCurrentPage();
+      const currentPage = pagesManager.getCurrentPage();
 
       currentPage.style.transform =
         `translateX(${delta}px)`;
 
-      const previousPage = getPreviousPage();
+      const previousPage = pagesManager.getPreviousPage();
 
       // Optional parallax
       previousPage.style.transform =
@@ -342,7 +517,7 @@ function finishDrag(e) {
       closeSidebar();
     }
 
-  } else if (stack.length === 1) {
+  } else if (pagesManager.stack.length === 1) {
 
     if (delta > threshold) {
       openSidebar();
@@ -353,9 +528,9 @@ function finishDrag(e) {
   } else {
 
     if (delta > threshold) {
-      popPage();
+      pagesManager.pop();
     } else {
-      snapBack();
+      pagesManager.snapBack();
     }
 
   }

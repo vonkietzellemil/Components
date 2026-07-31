@@ -46,6 +46,7 @@
         <div class="sidebar-tabs">
           <p class="sidebar-nav-option" data-page="mainTestPage">Main Test Page</p>
           <p class="sidebar-nav-option" data-page="componentsPage">Components Page</p>
+          <p onclick="bottomSheetManager.push(bottomSheetManager.createBottomSheet({ title: 'Hola die faldwee' }));">Bottomsheet</p>
         </div>
       </div>
     </div>
@@ -91,7 +92,7 @@
           </button>
         </div>
 
-        <button class="button icon-button liquid-glass floating-action-button" onclick="pushPage( createPage(pages.mainTestPage) );">
+        <button class="button icon-button liquid-glass floating-action-button" onclick="pagesManager.push( pagesManager.createPage(pages.mainTestPage) );">
           <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z"/></svg>
         </button>
 
@@ -258,7 +259,7 @@
           <div>
             <h2 class="header">Avatar</h2>
             <div class="avatar">
-              JD
+              EV
             </div>
           </div>
 
@@ -277,7 +278,7 @@
                 Your inbox is empty.
               </p>
 
-              <button class="button button--primary" onclick="document.getElementById('sheet').style.display = 'flex';">
+              <button class="button button--primary">
                 Create message
               </button>
 
@@ -387,7 +388,7 @@
           </button>
         </div>
 
-        <button class="button icon-button liquid-glass floating-action-button" onclick="pushPage( createPage(pages.mainTestPage) );">
+        <button class="button icon-button liquid-glass floating-action-button" onclick="pagesManager.push( pagesManager.createPage(pages.mainTestPage) );">
           <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z"/></svg>
         </button>
 
@@ -441,34 +442,6 @@
       </div>
 
     </div>
-
-
-
-
-
-    <div id="sheet" class="sheet" style="display: none;">
-
-      <div class="sheet__backdrop"></div>
-
-
-      <div class="sheet__content">
-
-        <div class="sheet__handle"></div>
-
-          <h2>
-            Title
-          </h2>
-
-          <p>
-            Content...
-          </p>
-
-          <button class="button button--secondary" onclick="document.getElementById('sheet').style.display = 'none'">Cancel</button>
-
-        </div>
-
-    </div>
-
 
 
 
