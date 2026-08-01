@@ -63,8 +63,7 @@
   box-shadow:
   var(--shadow-lg);
 
-  transition: transform 0.4 ccubic-bezier(.8,.2,1);
-  transition: transform 0.4s ease;
+  transition: transform 0.4s var(--ease-main);
 }
 
 

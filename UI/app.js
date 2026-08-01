@@ -64,7 +64,7 @@ const navigation = {
           </button>
         </div>
 
-        <button class="button icon-button liquid-glass floating-action-button" onclick="pages.push( createPage({ title: 'Page' }) )">
+        <button class="button icon-button liquid-glass floating-action-button" onclick="navigation.pages.push( navigation.pages.createPage({ title: 'Page' }) )">
           <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z"/></svg>
         </button>
       `;
@@ -72,30 +72,7 @@ const navigation = {
       return newPage;
     },
 
-    push(pageEl, animation=true) {  
-      if (this.isTransitioning) return;
-
-      pagesContainer.appendChild(pageEl);
-
-
-      const currentPage = this.top();
-      
-      this.stack.push(pageEl);
-      if (!currentPage) return;
-
-      this.isTransitioning = true;
-
-      currentPage.classList.add("page-behind");
-
-      if (!animation) return;
-
-      pageEl.classList.add("page-enter");
-
-      requestAnimationFrame(() => {
-        currentPage && currentPage.classList.add("page-behind");
-        pageEl.classList.add("page-enter-active");
-      });
-
+    push(pageEl, animation=true) { 
       setTimeout(() => {
         this.isTransitioning = false;
 
@@ -106,7 +83,6 @@ const navigation = {
     pop(animation=true) {
 
       if (this.isTransitioning) return;
-      this.isTransitioning = true;
 
       const currentPage = this.top();
       const previousPage = this.prev();
@@ -115,6 +91,7 @@ const navigation = {
       previousPage.style.transform = "";
       
       if (!animation) return;
+      this.isTransitioning = true;
 
       currentPage.classList.add("page-exit-active");
       previousPage.classList.add("page-return");
@@ -129,7 +106,7 @@ const navigation = {
       setTimeout(() => {
         currentPage.remove();
         this.stack.pop();
-        isTransitioning = false;
+        this.isTransitioning = false;
       }, 300);
     },
 
@@ -139,11 +116,11 @@ const navigation = {
 
       currentPage.style.transform = "";
 
-      // pagesBackground.style.opacity = "0";
-      // pagesBackground.style.transform =
-      //   `translateX(0) scale(${bgScale})`;
+      pagesBackground.style.opacity = "0";
+      pagesBackground.style.transform =
+        `translateX(0) scale(${bgScale})`;
 
-      // overlay.classList.remove("open");
+      overlay.classList.remove("open");
     },
   },
 
@@ -185,8 +162,6 @@ const navigation = {
         this.pop();
       });
 
-      this.addDragPhysics(newSheet);
-
       return newSheet;
     },
 
@@ -203,15 +178,16 @@ const navigation = {
       let lastTime = 0;
       let dragging = false;
 
-      const maxDragDistance = 300;
+      const contentAnimation = getComputedStyle(content).transition;      
 
+      const maxDragDistance = 300;
       handle.addEventListener("pointerdown", (e) => {
         dragging = true;
         startY = e.clientY;
         lastY = e.clientY;
         lastTime = performance.now();
 
-        sheetEl.style.transition = "none";
+        content.style.transition = "none";
         handle.setPointerCapture(e.pointerId);
       });
 
@@ -241,6 +217,8 @@ const navigation = {
         if (!dragging) return;
         dragging = false;
 
+        content.style.transition = contentAnimation;
+
         const shouldClose = currentY > 140 || velocity > 0.9;
 
         if (shouldClose) {
@@ -253,9 +231,11 @@ const navigation = {
       });
     },
 
-    push(sheetEl) {  
+    push(sheetEl) {
+
       document.body.appendChild(sheetEl);
-      
+      this.addDragPhysics(sheetEl);
+
       this.stack.push(sheetEl);
 
       // currentPage.classList.add("page-behind");
@@ -264,7 +244,9 @@ const navigation = {
       const scale = Math.max(0.92, 1 - depth * 0.42);
 
       console.log(1 - depth * 0.02)
-      AppContent.style.transform = `scale(${scale})`;
+      if (!sidebarIsOpen) {
+        AppContent.style.transform = `scale(${scale})`;
+      }
 
       requestAnimationFrame(() => {
         sheetEl.classList.remove("hidden");
@@ -372,6 +354,12 @@ let startY = 0;
 let dragMode = 0;
 let dragDirection = null; // null | "horizontal" | "vertical"
 
+let pagesContainerAnimation = "";
+let pagesBackgroundAnimation = "";
+
+let previousPage = null;
+let previousPageAnimation = "";
+
 pagesContainer.addEventListener("pointerdown", e => {
   // Check for input  
   if (isAnyInputFocused()) {
@@ -383,6 +371,16 @@ pagesContainer.addEventListener("pointerdown", e => {
   startY = e.clientY;
   dragDirection = null;
 
+  previousPage = navigation.pages.prev();
+
+  pagesContainerAnimation = getComputedStyle(pagesContainer).transition;
+  pagesBackgroundAnimation = getComputedStyle(pagesBackground).transition;
+  if (previousPage) {
+    previousPageAnimation = getComputedStyle(previousPage).transition;
+  }
+
+  pagesContainer.style.transition = "none";
+  pagesBackground.style.transition = "none";
   pagesContainer.setPointerCapture(e.pointerId);
 
   if (navigation.pages.stack.length === 1) {
@@ -463,12 +461,12 @@ pagesContainer.addEventListener("pointermove", e => {
         delta / window.innerWidth
       );
 
-      const currentPage = pages.top();
+      const currentPage = navigation.pages.top();
 
       currentPage.style.transform =
         `translateX(${delta}px)`;
 
-      const previousPage = pages.prev();
+      const previousPage = navigation.pages.prev();
 
       // Optional parallax
       previousPage.style.transform =
@@ -479,6 +477,12 @@ pagesContainer.addEventListener("pointermove", e => {
 });
 
 function finishDrag(e) {
+  pagesContainer.style.transition = pagesContainerAnimation;
+  pagesBackground.style.transition = pagesBackgroundAnimation;
+  if (previousPage && previousPageAnimation) {
+    previousPage.style.transition = previousPageAnimation;
+  }
+
   if (!dragging) {
     pointerDown = false;
     return;
@@ -521,9 +525,9 @@ function finishDrag(e) {
   } else {
 
     if (delta > threshold) {
-      pages.pop();
+      navigation.pages.pop();
     } else {
-      pages.snapBack();
+      navigation.pages.snapBack();
     }
 
   }
@@ -588,18 +592,6 @@ sidebar.querySelectorAll(".sidebar-nav-option").forEach(option => {
     closeSidebar();
   });
 });
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 // ===================================
