@@ -20,60 +20,146 @@ const overlay = document.getElementById("pageOverlay");
 // Push/Pop Pages      Sheets
 // ========================================================
 
+const VIEWS = {
+  root: {
+    page: {
+      type: "lists",
+      getParams() {
+        return {
+          title: "Lists App",
+
+          createBottomSheetContent: sheets.list,
+        };
+      },
+    },
+  },
+
+  archive: {
+    page: {
+      type: "lists",
+      getParams() {
+        return {
+          title: "Archive",
+        };
+      },
+    },
+  },
+  deleted: {
+    page: {
+      type: "lists",
+      getParams() {
+        return {
+          title: "Trash",
+        };
+      },
+    },
+  },
+
+
+  singleList: {
+    page: {
+      type: "list",
+      getParams() {
+        return {
+          title: "Single List",
+        };
+      },
+    },
+  },
+};
+
+
 const navigation = {
   pages: {
+    types: {
+      listBase({
+        title,
+      }) {
+        const page = `
+            <div class="page-header">
+                  
+              <h2 class="title">${title}</h2>
+              
+              <div class="searchbar-container">
+                <button class="open-sidebar-button button icon-button" onclick="navigation.pages.pop()">
+                  <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="M640-80 240-480l400-400 71 71-329 329 329 329-71 71Z"/></svg>
+                </button>
+                <input class="input searchbar" placeholder="Search">
+              </div>
+            </div>
+
+            <div class="floating-actions-menu liquid-glass">
+              <button class="button icon-button">
+                <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="M320-440v-287L217-624l-57-56 200-200 200 200-57 56-103-103v287h-80ZM600-80 400-280l57-56 103 103v-287h80v287l103-103 57 56L600-80Z"/></svg>
+              </button>
+
+              <button class="button icon-button">
+                <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="M120-240v-80h240v80H120Zm0-200v-80h480v80H120Zm0-200v-80h720v80H120Z"/></svg>
+              </button>
+
+              <button class="button icon-button">
+                <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="M440-160q-17 0-28.5-11.5T400-200v-240L168-736q-15-20-4.5-42t36.5-22h560q26 0 36.5 22t-4.5 42L560-440v240q0 17-11.5 28.5T520-160h-80Zm40-308 198-252H282l198 252Zm0 0Z"/></svg>
+              </button>
+
+              <button class="button icon-button">
+                <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="M784-120 532-372q-30 24-69 38t-83 14q-109 0-184.5-75.5T120-580q0-109 75.5-184.5T380-840q109 0 184.5 75.5T640-580q0 44-14 83t-38 69l252 252-56 56ZM380-400q75 0 127.5-52.5T560-580q0-75-52.5-127.5T380-760q-75 0-127.5 52.5T200-580q0 75 52.5 127.5T380-400Z"/></svg>
+              </button>
+            </div>
+
+            <button class="button icon-button liquid-glass floating-action-button" onclick="
+              
+            ">
+              <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z"/></svg>
+            </button>
+          `;
+
+          return page;
+      },
+
+      lists: {
+        getInnerHTML(params) {
+          return navigation.pages.types.listBase({
+            ...params,
+          });
+        }
+      },
+
+      list: {
+        getInnerHTML(params) {
+          return navigation.pages.types.listBase({
+            ...params,
+          });
+        }
+      }
+
+    },
     stack: [],
     top() { return this.stack[this.stack.length - 1]; },
     prev() { return this.stack[this.stack.length - 2]; },
     isTransitioning: false,
 
-    createPage ({
-      title,
-    }) {
+    createPage(pageType, params, animation=true) {
       const newPage = document.createElement("div");
       newPage.classList.add("page");
 
-      newPage.innerHTML = `
-        <div class="page-header">
-              
-          <h2 class="title">${title + this.stack.length}</h2>
-          
-          <div class="searchbar-container">
-            <button class="open-sidebar-button button icon-button" onclick="navigation.pages.pop()">
-              <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="M640-80 240-480l400-400 71 71-329 329 329 329-71 71Z"/></svg>
-            </button>
-            <input class="input searchbar" placeholder="Search">
-          </div>
-        </div>
+      const pageHTML = this.types[pageType].getInnerHTML(params);
+      newPage.innerHTML = pageHTML;
 
-        <div class="floating-actions-menu liquid-glass">
-          <button class="button icon-button">
-            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="M320-440v-287L217-624l-57-56 200-200 200 200-57 56-103-103v287h-80ZM600-80 400-280l57-56 103 103v-287h80v287l103-103 57 56L600-80Z"/></svg>
-          </button>
+      pagesContainer.appendChild(newPage);
 
-          <button class="button icon-button">
-            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="M120-240v-80h240v80H120Zm0-200v-80h480v80H120Zm0-200v-80h720v80H120Z"/></svg>
-          </button>
 
-          <button class="button icon-button">
-            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="M440-160q-17 0-28.5-11.5T400-200v-240L168-736q-15-20-4.5-42t36.5-22h560q26 0 36.5 22t-4.5 42L560-440v240q0 17-11.5 28.5T520-160h-80Zm40-308 198-252H282l198 252Zm0 0Z"/></svg>
-          </button>
+      // Temorary for sheet testing
+      newPage.querySelector(".floating-action-button").addEventListener("click", e => {
+        navigation.sheets.push(
+          navigation.sheets.createBottomSheet({ title: 'Create List', content: params.createBottomSheetContent })
+        );
+      })
 
-          <button class="button icon-button">
-            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="M784-120 532-372q-30 24-69 38t-83 14q-109 0-184.5-75.5T120-580q0-109 75.5-184.5T380-840q109 0 184.5 75.5T640-580q0 44-14 83t-38 69l252 252-56 56ZM380-400q75 0 127.5-52.5T560-580q0-75-52.5-127.5T380-760q-75 0-127.5 52.5T200-580q0 75 52.5 127.5T380-400Z"/></svg>
-          </button>
-        </div>
-
-        <button class="button icon-button liquid-glass floating-action-button" onclick="navigation.sheets.push( navigation.sheets.createBottomSheet({ title: 'Page', content: 'This is the sheet content.' }) )">
-          <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z"/></svg>
-        </button>
-      `;
-
+      this.push(newPage, animation);
       return newPage;
     },
 
     push(pageEl, animation=true) { 
-      pagesContainer.appendChild(pageEl);
 
       this.stack.push(pageEl);
 
@@ -308,17 +394,10 @@ const navigation = {
   },
 };
 
-const pagesPre = {
-  mainTestPage: {
-    title: "Title",
-  },
-};
 
 const sheets = {
   list: `
-    <div class="field">
-
-      
+    <div class="field">   
 
       <input
         class="input"
@@ -384,6 +463,11 @@ const sheets = {
   `,
 };
 
+function createPageFromView(view) {
+  
+  return navigation.pages.createPage(view.page.type, view.page.getParams());
+}
+
 
 showPage(componentsPage);
 
@@ -397,7 +481,7 @@ function showPage(page) {
 
 
 
-navigation.sheets.push( navigation.sheets.createBottomSheet({ title: 'Create List', content: sheets.list }) )
+// navigation.sheets.push( navigation.sheets.createBottomSheet({ title: 'Create List', content: sheets.list }) )
 
 
 function isAnyInputFocused() { return ['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName); }
