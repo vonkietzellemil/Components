@@ -39,7 +39,7 @@ const navigation = {
           <h2 class="title">${title + this.stack.length}</h2>
           
           <div class="searchbar-container">
-            <button class="open-sidebar-button button icon-button" onclick="pages.pop()">
+            <button class="open-sidebar-button button icon-button" onclick="navigation.pages.pop()">
               <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="M640-80 240-480l400-400 71 71-329 329 329 329-71 71Z"/></svg>
             </button>
             <input class="input searchbar" placeholder="Search">
@@ -73,6 +73,23 @@ const navigation = {
     },
 
     push(pageEl, animation=true) { 
+      pagesContainer.appendChild(pageEl);
+
+      this.stack.push(pageEl);
+
+      const previousPage = this.prev();
+
+      previousPage?.classList.add("page-behind");
+
+      if (!animation) return;
+      this.isTransitioning = true;
+
+      pageEl.classList.add("page-enter");
+      
+      requestAnimationFrame(() => {
+        pageEl.classList.add("page-enter-active");
+      });
+
       setTimeout(() => {
         this.isTransitioning = false;
 
@@ -90,24 +107,29 @@ const navigation = {
       currentPage.style.transform = "";
       previousPage.style.transform = "";
       
-      if (!animation) return;
-      this.isTransitioning = true;
+      if (animation) {
+        this.isTransitioning = true;
 
-      currentPage.classList.add("page-exit-active");
-      previousPage.classList.add("page-return");
+        currentPage.classList.add("page-exit-active");
+        previousPage.classList.add("page-return");
 
-      setTimeout(() => {
-        previousPage.classList.remove(
-          "page-behind",
-          "page-return"
-        );
-      }, 300);
+        setTimeout(() => {
+          previousPage.classList.remove(
+            "page-behind",
+            "page-return"
+          );
+        }, 300);
 
-      setTimeout(() => {
+        setTimeout(() => {
+          currentPage.remove();
+          this.stack.pop();
+          this.isTransitioning = false;
+        }, 300);
+      } else {
         currentPage.remove();
         this.stack.pop();
-        this.isTransitioning = false;
-      }, 300);
+      }
+      
     },
 
     snapBack() {
@@ -381,6 +403,9 @@ pagesContainer.addEventListener("pointerdown", e => {
 
   pagesContainer.style.transition = "none";
   pagesBackground.style.transition = "none";
+  if (previousPage) {
+    previousPage.style.transition = "none";
+  }
   pagesContainer.setPointerCapture(e.pointerId);
 
   if (navigation.pages.stack.length === 1) {
@@ -593,6 +618,11 @@ sidebar.querySelectorAll(".sidebar-nav-option").forEach(option => {
   });
 });
 
+
+
+setTimeout(() => {
+  console.log(navigation.pages);
+}, 1000);
 
 // ===================================
 // Collapsing searchbar try
