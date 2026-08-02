@@ -64,7 +64,7 @@ const navigation = {
           </button>
         </div>
 
-        <button class="button icon-button liquid-glass floating-action-button" onclick="navigation.pages.push( navigation.pages.createPage({ title: 'Page' }) )">
+        <button class="button icon-button liquid-glass floating-action-button" onclick="navigation.sheets.push( navigation.sheets.createBottomSheet({ title: 'Page', content: 'This is the sheet content.' }) )">
           <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z"/></svg>
         </button>
       `;
@@ -137,12 +137,15 @@ const navigation = {
       const previousPage = this.prev();
 
       currentPage.style.transform = "";
+      previousPage.style.transform = "";
+      
+      currentPage.classList.add("page-enter-active");
+      previousPage.classList.add("page-behind");
 
-      pagesBackground.style.opacity = "0";
-      pagesBackground.style.transform =
-        `translateX(0) scale(${bgScale})`;
-
-      overlay.classList.remove("open");
+      setTimeout(() => {
+        currentPage.classList.remove("page-enter-active");
+        previousPage.classList.remove("page-behind");
+      }, 300);
     },
   },
 
@@ -153,16 +156,17 @@ const navigation = {
 
     createBottomSheet ({
       title,
+      content,
     }) {
       const newSheet = document.createElement("div");
-      newSheet.classList.add("sheet", "hidden");
+      newSheet.classList.add("sheet__wrapper", "hidden");
 
       newSheet.innerHTML = `
         
         <div class="sheet__backdrop"></div>
 
 
-        <div class="sheet__content">
+        <div class="sheet">
 
           <div class="sheet__handle"></div>
 
@@ -170,9 +174,7 @@ const navigation = {
               ${title}
             </h2>
 
-            <p>
-              Content...
-            </p>
+            <div class="sheet__content">${content || "content..."}</div>
 
             <button class="button button--secondary">Cancel</button>
 
@@ -180,7 +182,7 @@ const navigation = {
         </div>
       `;
 
-      newSheet.addEventListener("click", e => {
+      newSheet.querySelector(".sheet__backdrop").addEventListener("click", e => {
         this.pop();
       });
 
@@ -188,10 +190,8 @@ const navigation = {
     },
 
     addDragPhysics(sheetEl) {
-      const handle = sheetEl.querySelector(".sheet__handle");
       const backdrop = sheetEl.querySelector(".sheet__backdrop");
-      const content = sheetEl.querySelector(".sheet__content");
-      if (!handle) return;
+      const sheet = sheetEl.querySelector(".sheet");
 
       let startY = 0;
       let currentY = 0;
@@ -200,20 +200,20 @@ const navigation = {
       let lastTime = 0;
       let dragging = false;
 
-      const contentAnimation = getComputedStyle(content).transition;      
+      const sheetAnimation = getComputedStyle(sheet).transition;      
 
       const maxDragDistance = 300;
-      handle.addEventListener("pointerdown", (e) => {
+      sheet.addEventListener("pointerdown", (e) => {
         dragging = true;
         startY = e.clientY;
         lastY = e.clientY;
         lastTime = performance.now();
 
-        content.style.transition = "none";
-        handle.setPointerCapture(e.pointerId);
+        sheet.style.transition = "none";
+        sheet.setPointerCapture(e.pointerId);
       });
 
-      handle.addEventListener("pointermove", (e) => {
+      sheet.addEventListener("pointermove", (e) => {
         if (!dragging) return;
 
         const now = performance.now();
@@ -231,15 +231,15 @@ const navigation = {
 
         console.log(dragProgress)
 
-        content.style.transform = `translateY(${currentY}px)`;
+        sheet.style.transform = `translateY(${currentY}px)`;
         backdrop.style.opacity = 1 - dragProgress;
       });
 
-      handle.addEventListener("pointerup", () => {
+      sheet.addEventListener("pointerup", () => {
         if (!dragging) return;
         dragging = false;
 
-        content.style.transition = contentAnimation;
+        sheet.style.transition = sheetAnimation;
 
         const shouldClose = currentY > 140 || velocity > 0.9;
 
@@ -247,7 +247,7 @@ const navigation = {
           console.log("closing")
           this.pop();
         } else {
-          content.style.transform = "translateY(0)";
+          sheet.style.transform = "translateY(0)";
           backdrop.style.opacity = `1`;
         }
       });
@@ -260,12 +260,9 @@ const navigation = {
 
       this.stack.push(sheetEl);
 
-      // currentPage.classList.add("page-behind");
-
       const depth = navigation.sheets.stack.length;
-      const scale = Math.max(0.92, 1 - depth * 0.42);
+      const scale = Math.max(0.92, 1 - depth * 0.04);
 
-      console.log(1 - depth * 0.02)
       if (!sidebarIsOpen) {
         AppContent.style.transform = `scale(${scale})`;
       }
@@ -281,13 +278,14 @@ const navigation = {
     pop() {
       const currentSheet = this.getCurrentSheet();
       this.remove(currentSheet);
+
       AppContent.style.transform = `scale(1)`;
     },
 
     remove(sheetEl) {
 
-      sheetEl.querySelector(".sheet__content").style.transform = "translateY(100%)";
-      // currentSheet.classList.add("hidden");
+      sheetEl.classList.add("hidden");
+      sheetEl.querySelector(".sheet").style.transform = "translateY(100%)";
 
       setTimeout(() => {
         sheetEl.remove();
@@ -308,13 +306,83 @@ const navigation = {
       // overlay.classList.remove("open");
     },
   },
-}
+};
 
 const pagesPre = {
   mainTestPage: {
     title: "Title",
   },
-}
+};
+
+const sheets = {
+  list: `
+    <div class="field">
+
+      
+
+      <input
+        class="input"
+        placeholder="Name"
+      />
+
+    </div>
+
+
+    <div class="field">
+
+      <label>
+        Options
+      </label>
+
+      <label class="switch">
+
+        <input type="checkbox">
+
+        <span></span>
+
+      </label>
+
+      <label class="switch">
+
+        <input type="checkbox">
+
+        <span></span>
+
+      </label>
+
+    </div>
+
+
+    <div class="field">
+
+      <label>
+        Sort by
+      </label>
+
+      <div class="radio-group">
+        <label class="radio">
+          <input type="radio" name="theme" value="light" checked>
+          <span class="radio__control"></span>
+          <span>Manual</span>
+        </label>
+
+        <label class="radio">
+          <input type="radio" name="theme" value="dark">
+          <span class="radio__control"></span>
+          <span>Alphabetic</span>
+        </label>
+
+        <label class="radio">
+          <input type="radio" name="theme" value="system">
+          <span class="radio__control"></span>
+          <span>Newest first</span>
+        </label>
+      
+      </div>
+
+    </div>
+  `,
+};
 
 
 showPage(componentsPage);
@@ -324,12 +392,12 @@ function showPage(page) {
 
   page.style.display = "flex";
 
-  navigation.pages.push(page);
+  navigation.pages.push(page, false);
 }
 
 
 
-navigation.sheets.push(navigation.sheets.createBottomSheet({ title: 'Hola die faldwee' }));
+navigation.sheets.push( navigation.sheets.createBottomSheet({ title: 'Create List', content: sheets.list }) )
 
 
 function isAnyInputFocused() { return ['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName); }
@@ -620,9 +688,8 @@ sidebar.querySelectorAll(".sidebar-nav-option").forEach(option => {
 
 
 
-setTimeout(() => {
-  console.log(navigation.pages);
-}, 1000);
+
+
 
 // ===================================
 // Collapsing searchbar try

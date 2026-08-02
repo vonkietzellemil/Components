@@ -1,11 +1,11 @@
-.sheet.hidden .sheet__backdrop {
+.sheet__wrapper.hidden .sheet__backdrop {
   opacity: 0;
 }
-.sheet.hidden .sheet__content {
+.sheet__wrapper.hidden .sheet {
   transform: translateY(100%);
 }
 
-.sheet {
+.sheet__wrapper {
 
   position:fixed;
 
@@ -35,17 +35,16 @@
 }
 
 
-.sheet__content {
+.sheet {
 
-  position:relative;
+  position: relative;
   
-  height: 100%;
-  
-  width:100%;
-
+  height: fit-content;
   max-height: 84vh;
+  
+  width: 100%;
 
-  overflow:auto;
+  overflow: auto;
 
   background:
   var(--color-surface);
@@ -63,15 +62,16 @@
   box-shadow:
   var(--shadow-lg);
 
-  transition: transform 0.4s var(--ease-main);
+  touch-action: none;
+
+  transition: transform var(--duration-slow) var(--ease-main);
 }
 
 
 .sheet__handle {
 
-  width:40px;
-  height:5px;
-  height:50px;
+  width: 40px;
+  height: 5px;
 
   border-radius:
   var(--radius-pill);
@@ -81,6 +81,4 @@
 
   margin:
   0 auto var(--space-5);
-
-  touch-action: none;
 }

@@ -111,7 +111,7 @@
                 </div>
 
                 <footer class="card__footer">
-                  <button class="button button--primary">Save</button>
+                  <button class="button button--primary" onclick="navigation.sheets.push(navigation.sheets.createBottomSheet({ title: 'Save account?' }));">Save</button>
                 </footer>
 
               </div>
@@ -128,6 +128,32 @@
             </div>
 
 
+
+            <div>
+              <h2 class="header">Radio</h2>
+
+              <div class="radio-group">
+                <label class="radio">
+                  <input type="radio" name="theme" value="light" checked>
+                  <span class="radio__control"></span>
+                  <span>Light</span>
+                </label>
+
+                <label class="radio">
+                  <input type="radio" name="theme" value="dark">
+                  <span class="radio__control"></span>
+                  <span>Dark</span>
+                </label>
+
+                <label class="radio">
+                  <input type="radio" name="theme" value="system">
+                  <span class="radio__control"></span>
+                  <span>System</span>
+                </label>
+              
+              </div>
+            </div>
+            
 
 
             <div>
