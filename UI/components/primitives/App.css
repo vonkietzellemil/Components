@@ -28,7 +28,7 @@ html, body {
 }
 
 html, body, #App {
-  overscroll-behavior-x: none;
+  overscroll-behavior: none;
 }
 
 #App {
