@@ -14,7 +14,7 @@ export const settingsPage = {
         </div>
       </div>
 
-      <div class="scrollcontainer">
+      <div class="scrollcontainer" style="touch-action: pan-y;">
 
         ${sections.map(section => `
           <section class="settings-section">
