@@ -47,7 +47,7 @@
           <div class="sidebar-tabs">
             <p class="sidebar-nav-option" data-page="mainTestPage">Main Test Page</p>
             <p class="sidebar-nav-option" data-page="componentsPage">Components Page</p>
-            <p onclick="navigation.sheets.push(navigation.sheets.createBottomSheet({ title: 'Hola die faldwee' }));">Bottomsheet</p>
+            <p onclick="App.sheets.push(App.sheets.createBottomSheet({ title: 'Hola die faldwee' }));">Bottomsheet</p>
           </div>
         </div>
       </div>
@@ -93,7 +93,7 @@
             </button>
           </div>
 
-          <button class="button icon-button liquid-glass floating-action-button" onclick="createPageFromView(VIEWS.root);">
+          <button class="button icon-button liquid-glass floating-action-button" onclick="App.pages.newPage(VIEWS.root.page);">
             <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z"/></svg>
           </button>
 
@@ -111,7 +111,7 @@
                 </div>
 
                 <footer class="card__footer">
-                  <button class="button button--primary" onclick="navigation.sheets.push(navigation.sheets.createBottomSheet({ title: 'Save account?' }));">Save</button>
+                  <button class="button button--primary" onclick="App.sheets.push(App.sheets.createBottomSheet({ title: 'Save account?' }));">Save</button>
                 </footer>
 
               </div>
@@ -415,7 +415,7 @@
             </button>
           </div>
 
-          <button class="button icon-button liquid-glass floating-action-button" onclick="navigation.pages.push( navigation.pages.createPage(pages.mainTestPage) );">
+          <button class="button icon-button liquid-glass floating-action-button" onclick="App.pages.newPage(settingsConfig);">
             <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z"/></svg>
           </button>
 

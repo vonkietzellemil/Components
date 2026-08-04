@@ -1,4 +1,4 @@
-const App = document.getElementById("App");
+const AppEl = document.getElementById("App");
 const AppContent = document.getElementById("AppContent");
 const pagesContainer = document.getElementById("pagesContainer");
 
@@ -68,8 +68,7 @@ const VIEWS = {
   },
 };
 
-
-const navigation = {
+const App = {
   pages: {
     types: {
       listBase({
@@ -81,7 +80,7 @@ const navigation = {
               <h2 class="title">${title}</h2>
               
               <div class="searchbar-container">
-                <button class="open-sidebar-button button icon-button" onclick="navigation.pages.pop()">
+                <button class="open-sidebar-button button icon-button" onclick="App.pages.pop()">
                   <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="M640-80 240-480l400-400 71 71-329 329 329 329-71 71Z"/></svg>
                 </button>
                 <input class="input searchbar" placeholder="Search">
@@ -118,7 +117,7 @@ const navigation = {
 
       lists: {
         getInnerHTML(params) {
-          return navigation.pages.types.listBase({
+          return App.pages.types.listBase({
             ...params,
           });
         }
@@ -126,18 +125,126 @@ const navigation = {
 
       list: {
         getInnerHTML(params) {
-          return navigation.pages.types.listBase({
+          return App.pages.types.listBase({
             ...params,
           });
         }
-      }
+      },
 
+      settings: {
+        getInnerHTML({ sections }) {
+
+          return `
+            <div class="page-header">
+                  
+              <h2 class="title">Settings</h2>
+              
+              <div class="searchbar-container">
+                <button class="open-sidebar-button button icon-button" onclick="App.pages.pop()">
+                  <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="M640-80 240-480l400-400 71 71-329 329 329 329-71 71Z"/></svg>
+                </button>
+                <input class="input searchbar" placeholder="Search">
+              </div>
+            </div>
+
+            ${sections.map(section => `
+              <section class="settings-section">
+
+                <h2>${section.title}</h2>
+
+                ${section.items.map(item => `
+                  <div class="settings-item" 
+                      data-setting-id="${item.id}"
+                      data-setting-type="${item.type}">
+
+                    <div class="setting-info">
+
+                      <span class="setting-icon">
+                        ${item.icon ?? ""}
+                      </span>
+
+                      <div>
+                        <h3>${item.title}</h3>
+                        <p>${item.description ?? ""}</p>
+                      </div>
+
+                    </div>
+
+
+                    <div class="setting-control">
+
+                      ${this.renderControl(item)}
+
+                    </div>
+
+                  </div>
+                `).join("")}
+
+              </section>
+            `).join("")}
+          `;
+        },
+
+        renderControl(item) {
+
+          switch(item.type) {
+
+            case "toggle":
+              return `
+
+                <label class="switch">
+
+                  <input type="checkbox" data-id="${item.id}" ${item.value ? "checked" : ""}>
+
+                  <span></span>
+
+                </label>
+              `;
+
+
+            case "select":
+              return `
+                <select 
+                  class="select"
+                  data-id="${item.id}"
+                >
+                  
+                  ${item.options.map(option => `
+                    <option 
+                      value="${option}"
+                      ${option === item.value ? "selected" : ""}
+                    >
+                      ${option}
+                    </option>
+                  `).join("")}
+
+                </select>
+              `;
+
+
+            case "link":
+              return `
+                <span class="setting-link">
+                  ›
+                </span>
+              `;
+
+
+            default:
+              return "";
+          }
+        }
+      }
     },
     stack: [],
     top() { return this.stack[this.stack.length - 1]; },
     prev() { return this.stack[this.stack.length - 2]; },
     isTransitioning: false,
 
+    newPage(page) {
+
+      return App.pages.createPage(page.type, page.getParams());
+    },
     createPage(pageType, params, animation=true) {
       const newPage = document.createElement("div");
       newPage.classList.add("page");
@@ -146,14 +253,6 @@ const navigation = {
       newPage.innerHTML = pageHTML;
 
       pagesContainer.appendChild(newPage);
-
-
-      // Temorary for sheet testing
-      newPage.querySelector(".floating-action-button").addEventListener("click", e => {
-        navigation.sheets.push(
-          navigation.sheets.createBottomSheet({ title: 'Create List', content: params.createBottomSheetContent })
-        );
-      })
 
       this.push(newPage, animation);
       return newPage;
@@ -224,21 +323,20 @@ const navigation = {
 
       currentPage.style.transform = "";
       previousPage.style.transform = "";
-      
-      currentPage.classList.add("page-enter-active");
-      previousPage.classList.add("page-behind");
+
+      currentPage.classList.add("page-enter-active")
+      previousPage.classList.add("page-behind")
 
       setTimeout(() => {
-        currentPage.classList.remove("page-enter-active");
-        previousPage.classList.remove("page-behind");
+        currentPage.classList.remove("page-enter-active")
       }, 300);
     },
   },
 
   sheets: {
     stack: [],
-    getCurrentSheet() { return this.stack[this.stack.length - 1]; },
-    getPreviousSheet() { return this.stack[this.stack.length - 2]; },
+    top() { return this.stack[this.stack.length - 1]; },
+    prev() { return this.stack[this.stack.length - 2]; },
 
     createBottomSheet ({
       title,
@@ -275,78 +373,49 @@ const navigation = {
       return newSheet;
     },
 
-    addDragPhysics(sheetEl) {
-      const backdrop = sheetEl.querySelector(".sheet__backdrop");
-      const sheet = sheetEl.querySelector(".sheet");
-
-      let startY = 0;
-      let currentY = 0;
-      let velocity = 0;
-      let lastY = 0;
-      let lastTime = 0;
-      let dragging = false;
-
-      const sheetAnimation = getComputedStyle(sheet).transition;      
-
-      const maxDragDistance = 300;
-      sheet.addEventListener("pointerdown", (e) => {
-        dragging = true;
-        startY = e.clientY;
-        lastY = e.clientY;
-        lastTime = performance.now();
-
-        sheet.style.transition = "none";
-        sheet.setPointerCapture(e.pointerId);
-      });
-
-      sheet.addEventListener("pointermove", (e) => {
-        if (!dragging) return;
-
-        const now = performance.now();
-        const dy = e.clientY - lastY;
-        const dt = now - lastTime;
-
-        velocity = dy / dt;
-
-        lastY = e.clientY;
-        lastTime = now;
-
-        currentY = Math.max(0, e.clientY - startY);
-
-        const dragProgress = Math.min(1, currentY / maxDragDistance);
-
-        console.log(dragProgress)
-
-        sheet.style.transform = `translateY(${currentY}px)`;
-        backdrop.style.opacity = 1 - dragProgress;
-      });
-
-      sheet.addEventListener("pointerup", () => {
-        if (!dragging) return;
-        dragging = false;
-
-        sheet.style.transition = sheetAnimation;
-
-        const shouldClose = currentY > 140 || velocity > 0.9;
-
-        if (shouldClose) {
-          console.log("closing")
-          this.pop();
-        } else {
-          sheet.style.transform = "translateY(0)";
-          backdrop.style.opacity = `1`;
-        }
-      });
-    },
-
     push(sheetEl) {
 
       document.body.appendChild(sheetEl);
-      this.addDragPhysics(sheetEl);
+
+      const backdrop = sheetEl.querySelector(".sheet__backdrop");
+      const sheet = sheetEl.querySelector(".sheet");
+
+      App.gestures.enableDrag({
+        handle: sheet,
+        direction: "vertical",
+        deadzone: 10,
+        thresholdDistance: 100,
+        thresholdVelocity: 0.9,
+
+        getElementsToAnimate() {
+          return [
+            backdrop,
+            sheet
+          ];
+        },
+
+        onMove({
+          event: e,
+          dx,
+          dy,
+          startX,
+          startY,
+        }) {
+          if (dy <= 0) return;
+          sheet.style.transform = `translateY(${dy}px)`;
+          backdrop.style.opacity = 1 - 0;
+        },
+        onThresholdCrossed() {
+          App.sheets.pop();
+        },
+        onThresholdNotCrossed() {
+          App.sheets.snapBack();
+        },
+      });
 
       this.stack.push(sheetEl);
 
-      const depth = navigation.sheets.stack.length;
+      const depth = App.sheets.stack.length;
       const scale = Math.max(0.92, 1 - depth * 0.04);
 
       if (!sidebarIsOpen) {
@@ -362,16 +431,15 @@ const navigation = {
     },
 
     pop() {
-      const currentSheet = this.getCurrentSheet();
+      const currentSheet = this.top();
       this.remove(currentSheet);
-
-      AppContent.style.transform = `scale(1)`;
     },
 
     remove(sheetEl) {
-
       sheetEl.classList.add("hidden");
       sheetEl.querySelector(".sheet").style.transform = "translateY(100%)";
+
+      AppContent.style.transform = `scale(1)`;
 
       setTimeout(() => {
         sheetEl.remove();
@@ -380,16 +448,198 @@ const navigation = {
     },
 
     snapBack() {
-      const currentPage = this.top();
-      const previousPage = this.prev();
+      const currentSheet = this.top();
 
-      currentPage.style.transform = "";
+      const depth = App.sheets.stack.length;
+      const scale = Math.max(0.92, 1 - depth * 0.04);
 
-      // pagesBackground.style.opacity = "0";
-      // pagesBackground.style.transform =
-      //   `translateX(0) scale(${bgScale})`;
+      if (!sidebarIsOpen) {
+        AppContent.style.transform = `scale(${scale})`;
+      }
 
-      // overlay.classList.remove("open");
+      currentSheet.querySelector(".sheet").style.transform = "";
+    },
+  },
+
+  gestures: {
+    enableDrag({
+      handle,
+      direction = "horizontal",
+      deadzone = 10,
+      thresholdDistance = 100,
+      thresholdVelocity = 0.9,
+
+      condition,
+
+      getElementsToAnimate = () => { return [] },
+
+      onStart,
+      onMove,
+      onEnd,
+      onThresholdCrossed,
+      onThresholdNotCrossed,
+    }) {
+      console.log(handle)
+      let pointerDown = false;
+      let dragging = false;
+
+      let startX = 0;
+      let startY = 0;
+
+      let dragDirection = null;
+
+      let animatedElements = [];
+
+      let velocity = 0;
+      let lastPos = 0;
+      let lastTime = 0;
+
+      const originalTransitions = new Map();
+
+      handle.addEventListener("pointerdown", e => {
+        if (!condition?.(e) === false) return;
+        pointerDown = true;
+        dragging = false;
+
+        startX = e.clientX;
+        startY = e.clientY;
+
+        dragDirection = null;
+
+        originalTransitions.clear();
+
+        animatedElements = getElementsToAnimate();
+
+        animatedElements.forEach(el => {
+          if (!el) return;
+
+          originalTransitions.set(el, el.style.transition);
+          el.style.transition = "none";
+        });
+
+        handle.setPointerCapture(e.pointerId);
+        
+        lastPos =
+          direction === "horizontal"
+            ? e.clientX
+            : e.clientY;
+
+        lastTime = performance.now();
+        velocity = 0;
+
+        onStart?.(e);
+      });
+
+      handle.addEventListener("pointermove", e => {
+        if (!pointerDown) return;
+
+        const dx = e.clientX - startX;
+        const dy = e.clientY - startY;
+
+        if (dragDirection === null) {
+          if (Math.hypot(dx, dy) < deadzone) return;
+
+          dragDirection =
+            Math.abs(dx) > Math.abs(dy)
+              ? "horizontal"
+              : "vertical";
+        }
+
+        if (dragDirection !== direction) return;
+
+        dragging = true;
+
+
+        const currentPos =
+          direction === "horizontal"
+            ? e.clientX
+            : e.clientY;
+
+        const now = performance.now();
+
+        const deltaPos = currentPos - lastPos;
+        const deltaTime = now - lastTime;
+
+        if (deltaTime > 0) {
+          velocity = deltaPos / deltaTime;
+        }
+
+        lastPos = currentPos;
+        lastTime = now;
+
+
+        onMove?.({
+          event: e,
+          dx,
+          dy,
+          startX,
+          startY,
+        });
+      });
+
+      function finishDrag(e) {
+        if (!pointerDown) return;
+
+        pointerDown = false;
+
+        // Restore transitions BEFORE callbacks trigger animations
+        animatedElements.forEach(el => {
+          if (!el) return;
+          el.style.transition =
+            originalTransitions.get(el) ?? "";
+        });
+
+        if (!dragging) {
+          onEnd?.({ event: e, dx: 0, dy: 0 });
+          return;
+        }
+
+        if (handle.hasPointerCapture(e.pointerId)) {
+          handle.releasePointerCapture(e.pointerId);
+        }
+
+        requestAnimationFrame(() => {
+          const dx = e.clientX - startX;
+          const dy = e.clientY - startY;
+
+          const distance =
+            direction === "horizontal"
+              ? dx
+              : dy;
+
+          const crossedDistance =
+            Math.abs(distance) >= thresholdDistance;
+
+          const crossedVelocity =
+            Math.abs(velocity) >= thresholdVelocity;
+
+          if (crossedDistance || crossedVelocity) {
+            onThresholdCrossed?.({
+              event: e,
+              dx,
+              dy,
+              velocity,
+              crossedDistance,
+              crossedVelocity,
+            });
+          } else {
+            onThresholdNotCrossed?.({
+              event: e,
+              dx,
+              dy,
+              velocity,
+            });
+          }
+
+
+          onEnd?.({ event: e, dx, dy });
+        });
+
+        dragging = false;
+      }
+
+      handle.addEventListener("pointerup", finishDrag);
+      handle.addEventListener("pointercancel", finishDrag);
     },
   },
 };
@@ -461,41 +711,150 @@ const sheets = {
 
     </div>
   `,
-};
+}; 
 
-function createPageFromView(view) {
-  
-  return navigation.pages.createPage(view.page.type, view.page.getParams());
+
+const settingsConfig = {
+  type: "settings",
+  getParams() {
+    return {
+      sections: [
+        {
+          title: "Appearance",
+          items: [
+            {
+              id: "darkMode",
+              icon: "🌙",
+              title: "Dark mode",
+              description: "Use a darker color theme",
+              type: "toggle",
+              value: false
+            },
+            {
+              id: "language",
+              icon: "🌍",
+              title: "Language",
+              description: "Choose your app language",
+              type: "select",
+              options: [
+                "English",
+                "German",
+                "French"
+              ],
+              value: "English"
+            }
+          ]
+        },
+
+        {
+          title: "Notifications",
+          items: [
+            {
+              id: "pushNotifications",
+              icon: "🔔",
+              title: "Push notifications",
+              description: "Receive updates from the app",
+              type: "toggle",
+              value: true
+            }
+          ]
+        },
+
+        {
+          title: "Account",
+          items: [
+            {
+              id: "profile",
+              icon: "👤",
+              title: "Profile",
+              description: "Manage your profile",
+              type: "link",
+              action() {
+                console.log("Open profile");
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
 }
 
-
-showPage(componentsPage);
+showPage(mainTestPage);
 
 function showPage(page) {
   allPages.forEach(page => page.style.display = "none");
 
   page.style.display = "flex";
 
-  navigation.pages.push(page, false);
+  App.pages.push(page, false);
 }
 
 
 
-// navigation.sheets.push( navigation.sheets.createBottomSheet({ title: 'Create List', content: sheets.list }) )
+// App.sheets.push( App.sheets.createBottomSheet({ title: 'Create List', content: sheets.list }) )
 
 
 function isAnyInputFocused() { return ['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName); }
 
 
 
-
 // ========================================================
-// Swipe to go back / Sidebar logic
+// enable swipe for pages go back
 // ========================================================
 
-overlay.addEventListener("click", () => {
-  closeSidebar();
+App.gestures.enableDrag({
+  handle: pagesContainer,
+
+  direction: "horizontal",
+
+  getElementsToAnimate() {
+    return [
+    App.pages.top(),
+    App.pages.prev?.()
+    ]
+  },
+
+  condition() {
+    if (App.pages.stack.length >= 2) {
+      return false;
+    } else {
+      return true;
+    }
+  },
+
+  onMove({ dx }) {
+    if (dx <= 0) return;
+
+    const progress = Math.min(
+      1,
+      dx / window.innerWidth
+    );
+
+    App.pages.top().style.transform =
+      `translateX(${dx}px)`;
+
+    if(!App.pages.prev()) return;
+
+    App.pages.prev().style.transform =
+      `translateX(${-50 + progress * 50}px)`;
+  },
+
+  onThresholdCrossed({ dx }) {
+    if (dx > 0) {
+      App.pages.pop();
+    }
+  },
+
+  onThresholdNotCrossed() {
+    App.pages.snapBack();
+  }
 });
+
+
+// ========================================================
+// Sidebar logic
+// ========================================================
 
 // const rotate = 25;
 
@@ -504,6 +863,58 @@ const scale = 0.75;
 const gap = 20;
 const bgScale = scale * 0.9;
 const bgOpacity = 0.6;
+
+App.gestures.enableDrag({
+  handle: pagesContainer,
+
+  direction: "horizontal",
+
+  getElementsToAnimate() {
+    return [
+      pagesContainer,
+      pagesBackground,
+    ]
+  },
+
+  condition(e) {
+    if (sidebarIsOpen || App.pages.stack.length <= 1) {
+      return false;
+    } else {
+      return true;
+    }
+  },
+
+  onMove({ dx }) {
+    const sidebarWidth = sidebar.clientWidth;
+
+    const startProgress = sidebarIsOpen ? 1 : 0;
+
+    const progress = Math.max(
+      0,
+      Math.min(1, startProgress + dx / sidebarWidth)
+    );
+
+    updateSidebarProgress(progress);
+  },
+
+  onThresholdCrossed({ dx }) {
+    if (dx > 0) {
+      openSidebar();
+    } else {
+      closeSidebar();
+    }
+  },
+
+  onThresholdNotCrossed() {
+    sidebarIsOpen
+      ? openSidebar()
+      : closeSidebar();
+  }
+});
+
+overlay.addEventListener("click", () => {
+  closeSidebar();
+});
 
 function getBackgroundOffset() {
   const lostLeft = pagesContainer.clientWidth * (1 - bgScale) / 2;
@@ -520,203 +931,6 @@ function getPageOffset() {
   return pageOffset;
 }
 
-
-let pointerDown = false;
-let dragging = false;
-let startX = 0;
-let startY = 0;
-let dragMode = 0;
-let dragDirection = null; // null | "horizontal" | "vertical"
-
-let pagesContainerAnimation = "";
-let pagesBackgroundAnimation = "";
-
-let previousPage = null;
-let previousPageAnimation = "";
-
-pagesContainer.addEventListener("pointerdown", e => {
-  // Check for input  
-  if (isAnyInputFocused()) {
-    return; 
-  }
-
-  pointerDown = true;
-  startX = e.clientX;
-  startY = e.clientY;
-  dragDirection = null;
-
-  previousPage = navigation.pages.prev();
-
-  pagesContainerAnimation = getComputedStyle(pagesContainer).transition;
-  pagesBackgroundAnimation = getComputedStyle(pagesBackground).transition;
-  if (previousPage) {
-    previousPageAnimation = getComputedStyle(previousPage).transition;
-  }
-
-  pagesContainer.style.transition = "none";
-  pagesBackground.style.transition = "none";
-  if (previousPage) {
-    previousPage.style.transition = "none";
-  }
-  pagesContainer.setPointerCapture(e.pointerId);
-
-  if (navigation.pages.stack.length === 1) {
-    dragMode = "sidebar";
-  } else {
-    dragMode = "popPage";
-  }
-});
-
-pagesContainer.addEventListener("pointermove", e => {
-  if (!pointerDown) return;
-
-  const delta = e.clientX - startX;
-
-  if (Math.abs(delta) > 10) {
-    dragging = true;
-  }
-
-  if (!dragging) return;
-  if (delta === 0) return;
-
-
-  const dx = e.clientX - startX;
-  const dy = e.clientY - startY;
-
-  if (dragDirection === null) {
-    if (Math.hypot(dx, dy) < 10) return;
-
-    dragDirection =
-      Math.abs(dx) > Math.abs(dy)
-        ? "horizontal"
-        : "vertical";
-  }
-
-  if (dragDirection === "vertical") {
-    console.log("vertical")
-    return; // let the browser scroll
-  }
-
-  e.preventDefault();  
-
-  switch (dragMode) {
-    case "sidebar":
-
-      // Open / Close Sidebar
-      const sidebarWidth = sidebar.clientWidth;
-      const startProgress = sidebarIsOpen ? 1 : 0;
-
-      const dragProgress = Math.max(
-        0,
-        Math.min(1, startProgress + delta / sidebarWidth)
-      );
-
-      pagesContainer.style.transform =`
-        translateX(${getPageOffset() * dragProgress}px)
-        scale(${1 + dragProgress * (scale - 1)})
-      `;
-      // rotateY(${-rotate * dragProgress}deg)
-      pagesContainer.style.borderRadius = borderRadius * dragProgress + "px";
-
-
-      const opacity = dragProgress * bgOpacity;
-
-      pagesBackground.style.transform = `
-        translateX(${getBackgroundOffset() * dragProgress}px)
-        scale(${1 + dragProgress * (bgScale - 1)})
-      `;
-
-      pagesBackground.style.opacity = opacity;
-
-      break;
-
-    case "popPage":
-      if (delta <= 0) return; // only allow right swipe
-
-      const progress = Math.min(
-        1,
-        delta / window.innerWidth
-      );
-
-      const currentPage = navigation.pages.top();
-
-      currentPage.style.transform =
-        `translateX(${delta}px)`;
-
-      const previousPage = navigation.pages.prev();
-
-      // Optional parallax
-      previousPage.style.transform =
-        `translateX(${-50 + progress * 50}px)`;
-    
-      break;
-  }
-});
-
-function finishDrag(e) {
-  pagesContainer.style.transition = pagesContainerAnimation;
-  pagesBackground.style.transition = pagesBackgroundAnimation;
-  if (previousPage && previousPageAnimation) {
-    previousPage.style.transition = previousPageAnimation;
-  }
-
-  if (!dragging) {
-    pointerDown = false;
-    return;
-  }
-
-  if (pagesContainer.hasPointerCapture(e.pointerId)) {
-    pagesContainer.releasePointerCapture(e.pointerId);
-  }
-
-  pointerDown = false;
-  dragging = false;
-
-  const delta = e.clientX - startX;
-
-  const threshold = window.innerWidth * 0.3;
-
-  if (sidebarIsOpen) {
-    
-    const sidebarWidth = sidebar.clientWidth;
-
-    const progress = Math.max(
-      0,
-      Math.min(1, (sidebarWidth + delta) / sidebarWidth)
-    );
-
-    if (progress > 0.5) {
-      openSidebar();
-    } else {
-      closeSidebar();
-    }
-
-  } else if (navigation.pages.stack.length === 1) {
-
-    if (delta > threshold) {
-      openSidebar();
-    } else {
-      closeSidebar();
-    }
-
-  } else {
-
-    if (delta > threshold) {
-      navigation.pages.pop();
-    } else {
-      navigation.pages.snapBack();
-    }
-
-  }
-}
-
-pagesContainer.addEventListener("pointerup", finishDrag);
-pagesContainer.addEventListener("pointercancel", finishDrag);
-
-
-
-
-
 allPages.forEach(page => {
   page.querySelector(".page-header svg").addEventListener("click", e => {
     toggleSidebar();
@@ -729,6 +943,26 @@ function toggleSidebar() {
   } else {
     openSidebar();
   }
+}
+
+function updateSidebarProgress(progress) {
+ 
+  pagesContainer.style.transform =`
+    translateX(${getPageOffset() * progress}px)
+    scale(${1 + progress * (scale - 1)})
+  `;
+
+  pagesContainer.style.borderRadius = borderRadius * progress + "px";
+
+
+  const opacity = progress * bgOpacity;
+
+  pagesBackground.style.transform = `
+    translateX(${getBackgroundOffset() * progress}px)
+    scale(${1 + progress * (bgScale - 1)})
+  `;
+
+  pagesBackground.style.opacity = opacity;
 }
 
 function openSidebar() {
@@ -763,13 +997,12 @@ function closeSidebar() {
 
 sidebar.querySelectorAll(".sidebar-nav-option").forEach(option => {
   option.addEventListener("click", () => {
-    navigation.pages.stack.length = 0;
+    App.pages.stack.length = 0;
 
     showPage(document.querySelector("#" + option.dataset.page));
     closeSidebar();
   });
 });
-
 
 
 

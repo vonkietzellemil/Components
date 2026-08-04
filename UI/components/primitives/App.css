@@ -252,3 +252,83 @@ Temporary Grid for components
   margin: 0;
   margin-bottom: var(--space-3);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+/* ==================================================
+Settings
+================================================== */
+
+.settings-section {
+  margin: 20px 0;
+}
+
+
+.settings-section h2 {
+  font-size: 14px;
+  color: #777;
+  text-transform: uppercase;
+  padding: 0 16px;
+}
+
+
+
+.settings-item {
+
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+
+  padding:16px;
+
+  background: var(--color-surface);
+
+  border-bottom: 1px solid var(--color-border);
+}
+
+
+.setting-info {
+
+  display:flex;
+  gap:12px;
+  align-items:center;
+
+}
+
+
+.setting-icon {
+
+  font-size:24px;
+
+}
+
+
+.setting-item h3 {
+
+  margin:0;
+  font-size:16px;
+
+}
+
+
+.setting-item p {
+
+  margin:4px 0 0;
+  font-size:13px;
+  color:#777;
+
+}
+
+
+.clickable {
+  cursor: pointer;
+}
