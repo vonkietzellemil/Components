@@ -14,41 +14,45 @@ export const settingsPage = {
         </div>
       </div>
 
-      ${sections.map(section => `
-        <section class="settings-section">
+      <div class="scrollcontainer">
 
-          <h2>${section.title}</h2>
+        ${sections.map(section => `
+          <section class="settings-section">
 
-          ${section.items.map(item => `
-            <div class="settings-item" 
-                data-setting-id="${item.id}"
-                data-setting-type="${item.type}">
+            <h2>${section.title}</h2>
 
-              <div class="setting-info">
+            ${section.items.map(item => `
+              <div class="settings-item" 
+                  data-setting-id="${item.id}"
+                  data-setting-type="${item.type}">
 
-                <span class="setting-icon">
-                  ${item.icon ?? ""}
-                </span>
+                <div class="setting-info">
 
-                <div>
-                  <h4>${item.title}</h4>
-                  <p>${item.description ?? ""}</p>
+                  <span class="setting-icon">
+                    ${item.icon ?? ""}
+                  </span>
+
+                  <div>
+                    <h4>${item.title}</h4>
+                    <p>${item.description ?? ""}</p>
+                  </div>
+
+                </div>
+
+
+                <div class="setting-control">
+
+                  ${this.renderControl(item)}
+
                 </div>
 
               </div>
+            `).join("")}
 
+          </section>
+        `).join("")}
 
-              <div class="setting-control">
-
-                ${this.renderControl(item)}
-
-              </div>
-
-            </div>
-          `).join("")}
-
-        </section>
-      `).join("")}
+      </div>
     `;
   },
   renderControl(item) {

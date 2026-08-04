@@ -61,4 +61,54 @@ export const settingsConfig = {
       }
     }
   },
+
+  manageData: {
+    type: "settings",
+    getParams() {
+      return {
+        sections: [
+          {
+            title: "Manage your Data",
+            items: [
+              {
+                id: "darkMode",
+                icon: "🌙",
+                title: "Export Data",
+                description: "",
+                type: "toggle",
+              },
+              {
+                id: "language",
+                icon: "🌍",
+                title: "Import Data",
+                description: "",
+                type: "select",
+                options: [
+                  "English",
+                  "German",
+                  "French"
+                ],
+              }
+            ]
+          },
+
+          {
+            title: "Delete Everything",
+            items: [
+              {
+                id: "profile",
+                icon: "👤",
+                title: "Delete my Data",
+                description: "",
+                type: "link",
+                action() {
+                  console.log("Open profile");
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
 };

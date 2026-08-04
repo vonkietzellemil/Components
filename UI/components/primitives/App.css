@@ -58,7 +58,9 @@ input, textarea {
   user-select: text;
 }
 
-
+.scrollcontainer {
+  overflow: auto;
+}
 
 /* =====================================================
 Pages and overlay/ background when opening sidebar

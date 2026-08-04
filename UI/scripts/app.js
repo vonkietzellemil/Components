@@ -572,7 +572,7 @@ const sheets = {
 
     </div>
   `,
-}; 
+};
 
 
 showPage(mainTestPage);
