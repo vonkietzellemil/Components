@@ -1,4 +1,4 @@
-export const settingsConfig = {
+export const settings = {
   root: {
     type: "settings",
     getParams() {

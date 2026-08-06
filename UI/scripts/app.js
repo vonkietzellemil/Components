@@ -6,7 +6,6 @@ const sidebar = document.getElementById("sidebar");
 let sidebarIsOpen = false;
 const allPages = document.querySelectorAll(".page");
 
-const mainTestPage = document.getElementById("mainTestPage");
 const componentsPage = document.getElementById("componentsPage");
 
 
@@ -15,7 +14,7 @@ const componentsPage = document.getElementById("componentsPage");
 const pagesBackground = document.getElementById("pagesBackground");
 const overlay = document.getElementById("pageOverlay");
 
-import { settingsConfig } from "./configs/settings.js"
+import { pageConfigs } from "./configs/pageConfigHandler.js"
 
 import { settingsPage } from "./pages/settings.js";
 import { listsPage } from "./pages/lists.js";
@@ -31,18 +30,7 @@ const pageTypes = {
 // ========================================================
 
 const VIEWS = {
-  root: {
-    page: {
-      type: "lists",
-      getParams() {
-        return {
-          title: "Lists App",
-
-          createBottomSheetContent: sheets.list,
-        };
-      },
-    },
-  },
+  root: pageConfigs.lists.root,
 
   archive: {
     page: {
@@ -78,17 +66,18 @@ const VIEWS = {
   },
 };
 
-const App = {
+export const App = {
   pages: {
     types: pageTypes,
+    configs: pageConfigs,
     stack: [],
     top() { return this.stack[this.stack.length - 1]; },
     prev() { return this.stack[this.stack.length - 2]; },
     isTransitioning: false,
 
-    newPage(page) {
+    newPage(page, animation=true) {
 
-      return App.pages.createPage(page.type, page.getParams());
+      return App.pages.createPage(page.type, page.getParams(), animation);
     },
    
     createPage(pageType, params, animation=true) {
@@ -575,7 +564,7 @@ const sheets = {
 };
 
 
-showPage(mainTestPage);
+App.pages.newPage(App.pages.configs.test.root, false);
 
 function showPage(page) {
   allPages.forEach(page => page.style.display = "none");
@@ -585,8 +574,8 @@ function showPage(page) {
   App.pages.push(page, false);
 }
 
-App.pages.newPage(settingsConfig.root);
-App.pages.newPage(VIEWS.root.page);
+
+setTimeout(() => openSidebar(), 200);
 
 // App.sheets.push( App.sheets.createBottomSheet({ title: 'Create List', content: sheets.list }) )
 
@@ -795,12 +784,25 @@ sidebar.querySelectorAll(".sidebar-nav-option").forEach(option => {
   option.addEventListener("click", () => {
     App.pages.stack.length = 0;
 
-    showPage(document.querySelector("#" + option.dataset.page));
+    sidebar.querySelectorAll(".sidebar-nav-option").forEach(option => option.classList.remove("active"));
+    option.classList.add("active");
+
+    App.pages.newPage(pageConfigs[option.dataset.pagetype][option.dataset.pageconfig], false);
     closeSidebar();
   });
 });
 
 
+sidebar.querySelector(".sidebar-action[data-action='support']").addEventListener("click", e => {
+  
+  sidebar.querySelectorAll(".sidebar-nav-option").forEach(option => option.classList.remove("active"));
+  e.target.classList.add("active");
+
+  App.sheets.push(
+    App.sheets.createBottomSheet({ title: "Contact Support", content: "" })
+  );
+  
+});
 
 
 
