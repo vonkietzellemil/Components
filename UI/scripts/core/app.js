@@ -13,16 +13,26 @@ const overlay = document.getElementById("pageOverlay");
 
 import { state } from "../core/state.js"
 
-import { pageConfigs } from "../configs/pageConfigHandler.js"
+import { pageConfigs } from "../configs/pageConfigs/pageConfigHandler.js"
 
-import { settingsPage } from "../pageTemplates/settings.js";
-import { listsPage } from "../pageTemplates/lists.js";
-import { listPage } from "../pageTemplates/list.js";
+import { settingsPage } from "../templates/pageTemplates/settings.js";
+import { listsPage } from "../templates/pageTemplates/lists.js";
+import { listPage } from "../templates/pageTemplates/list.js";
 
-const pageTypes = {
+const pageTemplates = {
   settings: settingsPage,
   lists: listsPage,
   list: listPage
+};
+
+
+import { sheetConfigs } from "../configs/sheetConfigs/sheetConfigHandle.js";
+
+
+import { listSheet } from "../templates/sheetTemplates/list.js";
+
+const sheetTemplates = {
+  list: listSheet,
 };
 // ========================================================
 // App:
@@ -77,25 +87,30 @@ export const VIEWS = {
 
 export const App = {
   pages: {
-    types: pageTypes,
+    templates: pageTemplates,
     configs: pageConfigs,
     stack: [],
     top() { return this.stack[this.stack.length - 1]; },
     prev() { return this.stack[this.stack.length - 2]; },
     isTransitioning: false,
 
-    newPage({ page, container=pagesContainer, animation=true }) {
+    newPage({
+      config,
+      context,
+      container=pagesContainer,
+      animation=true
+    }) {
 
-      return App.pages.createPage({ pageType: page.type, params: page.getParams(), container, animation });
+      return App.pages.createPage({ pageTemplate: config.template, params: config.getParams(context), container, animation });
     },
    
-    createPage({ pageType, params, container, animation=true }) {
+    createPage({ pageTemplate, params, container, animation=true }) {
 
       const newPage = document.createElement("div");
       newPage.classList.add("page");
 
 
-      const page = this.types[pageType];
+      const page = this.templates[pageTemplate];
 
 
       newPage.innerHTML = page.getInnerHTML(params);
@@ -194,29 +209,35 @@ export const App = {
   },
 
   sheets: {
+    templates: sheetTemplates,
+    configs: sheetConfigs,
     stack: [],
     top() { return this.stack[this.stack.length - 1]; },
     prev() { return this.stack[this.stack.length - 2]; },
 
     newSheet({
-      title,
-      content,
+      config,
+      context,
       animation=false
     }) {
       return App.sheets.createBottomSheet({
-        title,
-        content,
+        sheetTemplate: config.template,
+        params: config.getParams(context),
       }, animation);
     },
 
     createBottomSheet ({
-      title,
-      content,
+      sheetTemplate,
+      params,
       animation
     }) {
+
       const newSheet = document.createElement("div");
       newSheet.classList.add("sheet__wrapper", "hidden");
 
+      const sheet = this.templates[sheetTemplate];
+
+      console.log(sheet, this.templates, sheetTemplate)
       newSheet.innerHTML = `
         
         <div class="sheet__backdrop"></div>
@@ -227,10 +248,10 @@ export const App = {
           <div class="sheet__handle"></div>
 
             <h2>
-              ${title}
+              ${params.title}
             </h2>
 
-            <div class="sheet__content">${content || "content..."}</div>
+            <div class="sheet__content">${sheet.getInnerHTML(params) || "content..."}</div>
 
             <button class="button button--secondary">Cancel</button>
 
@@ -238,9 +259,18 @@ export const App = {
         </div>
       `;
 
+      document.body.appendChild(newSheet);
+
       newSheet.querySelector(".sheet__backdrop").addEventListener("click", e => {
         this.pop();
       });
+
+      if (sheet.init) {
+        sheet.init({
+          sheet: newSheet,
+          params
+        });
+      }
 
       this.push(newSheet, animation);
 
@@ -248,8 +278,6 @@ export const App = {
     },
 
     push(sheetEl) {
-
-      document.body.appendChild(sheetEl);
 
       const backdrop = sheetEl.querySelector(".sheet__backdrop");
       const sheet = sheetEl.querySelector(".sheet");
@@ -293,7 +321,6 @@ export const App = {
       const scale = Math.max(0.92, 1 - depth * 0.04);
 
       if (!state.sidebarIsOpen) {
-        console.log(state.sidebarIsOpen)
         AppContent.style.transform = `scale(${scale})`;
       }
 
@@ -516,75 +543,6 @@ export const App = {
       handle.addEventListener("pointercancel", finishDrag);
     },
   },
-};
-
-
-const sheets = {
-  list: `
-    <div class="field">   
-
-      <input
-        class="input"
-        placeholder="Name"
-      />
-
-    </div>
-
-
-    <div class="field">
-
-      <label>
-        Options
-      </label>
-
-      <label class="switch">
-
-        <input type="checkbox">
-
-        <span></span>
-
-      </label>
-
-      <label class="switch">
-
-        <input type="checkbox">
-
-        <span></span>
-
-      </label>
-
-    </div>
-
-
-    <div class="field">
-
-      <label>
-        Sort by
-      </label>
-
-      <div class="radio-group">
-        <label class="radio">
-          <input type="radio" name="theme" value="light" checked>
-          <span class="radio__control"></span>
-          <span>Manual</span>
-        </label>
-
-        <label class="radio">
-          <input type="radio" name="theme" value="dark">
-          <span class="radio__control"></span>
-          <span>Alphabetic</span>
-        </label>
-
-        <label class="radio">
-          <input type="radio" name="theme" value="system">
-          <span class="radio__control"></span>
-          <span>Newest first</span>
-        </label>
-      
-      </div>
-
-    </div>
-  `,
 };
 
 

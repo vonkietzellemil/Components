@@ -1,6 +1,7 @@
 let swipeEnabled = null;
 let itemsSortable = null;
 
+import { App } from "../core/app.js";
 import { StorageAPI } from "../services/storage.js";
 
 const ENTITY_TYPES = {
@@ -537,28 +538,31 @@ function createCategoryMenu(item, el) {
 
 function attachListEvents(row, list, config) {
   row.addEventListener("click", (e) => {
-    if (SelectionManager.longPressTriggered) {
-      SelectionManager.longPressTriggered = false;
-      return;
-    }
+    // if (SelectionManager.longPressTriggered) {
+    //   SelectionManager.longPressTriggered = false;
+    //   return;
+    // }
 
-    if (SelectionManager.active && (e.target === row.querySelector(".favorite-icon") || e.target === row.querySelector(".favorite-icon path"))) {
-      toggleFavoredList();
-      return;
-    };
+    // if (SelectionManager.active && (e.target === row.querySelector(".favorite-icon") || e.target === row.querySelector(".favorite-icon path"))) {
+    //   toggleFavoredList();
+    //   return;
+    // };
 
-    if (SelectionManager.active) {
+    // if (SelectionManager.active) {
 
-      SelectionManager.toggle(
-        row,
-        list,
-        config
-      );
+    //   SelectionManager.toggle(
+    //     row,
+    //     list,
+    //     config
+    //   );
 
-      return;
-    }
+    //   return;
+    // }
 
-    row.classList.add("active");
+    App.pages.newPage({
+      config: App.pages.configs.list.root,
+      context: { list }
+    });
   });
 
   document.addEventListener("click", (e) => {
@@ -568,9 +572,13 @@ function attachListEvents(row, list, config) {
   });
 
   // --- Edit ---
-  row.querySelector(".edit-icon-container")?.addEventListener("click", (e) => {
+  row.querySelector(".more-btn")?.addEventListener("click", (e) => {
     e.stopPropagation();
-    openEditModal(list);
+    
+    App.sheets.newSheet({
+      config: App.sheets.configs.list.edit,
+      context: { list },
+    });
   });
 
   // --- Open List ---

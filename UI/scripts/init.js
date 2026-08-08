@@ -14,18 +14,9 @@ const overlay = document.getElementById("pageOverlay");
 
 import { App } from "./core/app.js";
 import { state } from "./core/state.js"
+import { StorageAPI } from "./services/storage.js";
 
 function initiate() {
-  // App.pages.newPage({ page: App.pages.configs.lists.root, animation: false });
-
-  App.pages.push(componentsPage, false);
-
-  const item = document.querySelector(".list-item");
-
-  item.addEventListener("click", () => {
-    App.pages.newPage({ page: App.pages.configs.list.root });
-  });
-  
 
   // ========================================================
   // enable swipe for pages go back
@@ -232,7 +223,16 @@ function initiate() {
 
       closeSidebar();
       
-      App.pages.newPage({ page: App.pages.configs[option.dataset.pagetype][option.dataset.pageconfig], animation: false });
+      const branches = option.dataset.pageconfig.split(".");
+
+      const config = branches.reduce(
+        (obj, key) => obj?.[key],
+        App.pages.configs
+      );
+
+      console.log(config)
+
+      App.pages.newPage({ config, animation: false });
     });
   });
 
@@ -256,6 +256,43 @@ function initiate() {
 
 
 
+
+
+
+
+
+
+
+
+
+
+const item = document.querySelector(".list-item");
+
+  item.addEventListener("click", () => {
+    App.pages.newPage({ config: App.pages.configs.list.root });
+  });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 document.addEventListener("DOMContentLoaded", () => {
   initiate();
+
+  App.pages.newPage({ config: App.pages.configs.lists.root, animation: false });
+
+  // App.pages.push(componentsPage, false);
 });
