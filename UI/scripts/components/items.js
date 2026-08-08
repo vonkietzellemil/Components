@@ -149,62 +149,62 @@ export function renderCollection({
     ];
 
     // Loop hrough each nested sortable element
-    itemsSortable = nestedSortables.map(el =>
-      new Sortable(el, {
-        fallbackOnBody: true,
-        animation: 150,
-        ghostClass: "drag-ghost",
-        handle: isTouchDevice() ? ".drag-handle" : ".row",
-        draggable: ".draggable",
-        group: "nested",
+    // itemsSortable = nestedSortables.map(el =>
+    //   new Sortable(el, {
+    //     fallbackOnBody: true,
+    //     animation: 150,
+    //     ghostClass: "drag-ghost",
+    //     handle: isTouchDevice() ? ".drag-handle" : ".row",
+    //     draggable: ".draggable",
+    //     group: "nested",
 
-        onMove(evt) {
-          document
-            .querySelectorAll(".drag-hover")
-            .forEach(el => el.classList.remove("drag-hover"));
+    //     onMove(evt) {
+    //       document
+    //         .querySelectorAll(".drag-hover")
+    //         .forEach(el => el.classList.remove("drag-hover"));
 
-          if (evt.related.classList.contains("category-item-container")) {
-            evt.related.classList.add("drag-hover");
-          }
-        },
+    //       if (evt.related.classList.contains("category-item-container")) {
+    //         evt.related.classList.add("drag-hover");
+    //       }
+    //     },
 
-        onEnd(evt) {
-          document
-            .querySelectorAll(".drag-hover")
-            .forEach(el => el.classList.remove("drag-hover"));
-
-
-          const movedItemData = StorageAPI.getItemById(evt.item.dataset.id);
-          const targetContainer = evt.to;
-
-          // Update the parentId of the moved item based on the target container
-          movedItemData.parentId = targetContainer.dataset.id || config.parent.id || config.parent.view;
-          StorageAPI.updateItem(movedItemData.id, movedItemData);
+    //     onEnd(evt) {
+    //       document
+    //         .querySelectorAll(".drag-hover")
+    //         .forEach(el => el.classList.remove("drag-hover"));
 
 
-          // Update order of items
+    //       const movedItemData = StorageAPI.getItemById(evt.item.dataset.id);
+    //       const targetContainer = evt.to;
 
-          function saveContainerOrder(container) {
-            const parentId =
-              container.dataset.id ||
-              config.parent.id ||
-              config.parent.view;
+    //       // Update the parentId of the moved item based on the target container
+    //       movedItemData.parentId = targetContainer.dataset.id || config.parent.id || config.parent.view;
+    //       StorageAPI.updateItem(movedItemData.id, movedItemData);
 
-            const ids = [...container.children]
-              .filter(el => el.dataset.id)
-              .map(el => el.dataset.id);
 
-            StorageAPI.setViewOrder(parentId, ids);
-          };
+    //       // Update order of items
 
-          saveContainerOrder(evt.to);
+    //       function saveContainerOrder(container) {
+    //         const parentId =
+    //           container.dataset.id ||
+    //           config.parent.id ||
+    //           config.parent.view;
 
-          if (evt.from !== evt.to) {
-            saveContainerOrder(evt.from);
-          }
-        }
-      })
-    );
+    //         const ids = [...container.children]
+    //           .filter(el => el.dataset.id)
+    //           .map(el => el.dataset.id);
+
+    //         StorageAPI.setViewOrder(parentId, ids);
+    //       };
+
+    //       saveContainerOrder(evt.to);
+
+    //       if (evt.from !== evt.to) {
+    //         saveContainerOrder(evt.from);
+    //       }
+    //     }
+    //   })
+    // );
   }
 
   if (
@@ -283,6 +283,10 @@ function createListRowElem(item, { query, titleMatch, entrySnippet, rowCount }, 
 
   if (list.parentId === "deleted" && list.purgeAt) {
     row.classList.add("deleted");
+  }
+
+  if (list.status?.favored) {
+    row.querySelector(".favorite-btn").classList.add("active");
   }
 
   // if (SelectionManager.isSelected(item.id)) {
@@ -565,12 +569,6 @@ function attachListEvents(row, list, config) {
     });
   });
 
-  document.addEventListener("click", (e) => {
-    if (!row.contains(e.target) || SelectionManager.active) {
-      row.classList.remove("active");
-    }
-  });
-
   // --- Edit ---
   row.querySelector(".more-btn")?.addEventListener("click", (e) => {
     e.stopPropagation();
@@ -579,6 +577,13 @@ function attachListEvents(row, list, config) {
       config: App.sheets.configs.list.edit,
       context: { list },
     });
+  });
+
+
+  row.querySelector(".favorite-btn")?.addEventListener("click", (e) => {
+    e.stopPropagation();
+
+    toggleFavoredList();
   });
 
   // --- Open List ---
@@ -617,11 +622,11 @@ function attachListEvents(row, list, config) {
     list.status.favored = !list.status.favored;
 
     if (list.status.favored) {
-      row.querySelector(".favorite-icon").classList.add("heart-filled");
-      row.querySelector(".favorite-icon").classList.add("active");
+      row.querySelector(".favorite-btn").classList.add("heart-filled");
+      row.querySelector(".favorite-btn").classList.add("active");
     } else {
-      row.querySelector(".favorite-icon").classList.remove("heart-filled");
-      row.querySelector(".favorite-icon").classList.remove("active");
+      row.querySelector(".favorite-btn").classList.remove("heart-filled");
+      row.querySelector(".favorite-btn").classList.remove("active");
     }
 
     StorageAPI.updateList(list.id, {

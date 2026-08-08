@@ -165,7 +165,7 @@ export const App = {
       const previousPage = this.prev();
 
       currentPage.style.transform = "";
-      previousPage.style.transform = "";
+      if (previousPage) previousPage.style.transform = "";
       
       if (animation) {
         this.isTransitioning = true;
@@ -190,6 +190,10 @@ export const App = {
         this.stack.pop();
       }
       
+    },
+
+    clear() {
+      this.stack.forEach(() => this.pop(false));      
     },
 
     snapBack() {
@@ -335,6 +339,10 @@ export const App = {
     pop() {
       const currentSheet = this.top();
       this.remove(currentSheet);
+    },
+
+    clear() {
+      this.stack.forEach(() => this.pop());      
     },
 
     remove(sheetEl) {

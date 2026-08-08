@@ -1,12 +1,12 @@
 import { App } from "../../core/app.js";
 
 export const settingsPage = {
-  getInnerHTML({ sections }) {
+  getInnerHTML({ title, sections }) {
 
     return `
       <div class="page-header">
             
-        <h2 class="title">Settings</h2>
+        <h2 class="title">${title || "Settings"}</h2>
         
         <div class="searchbar-container">
           <button class="open-sidebar-button button icon-button" onclick="App.pages.pop()">

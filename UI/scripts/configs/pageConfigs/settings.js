@@ -1,18 +1,24 @@
+import { App } from "../../core/app.js";
+
 export const settings = {
   root: {
     template: "settings",
     getParams() {
       return {
+        title: "Settings",
         sections: [
           {
-            title: "Appearance",
+            title: "General",
             items: [
               {
-                id: "darkMode",
+                id: "preferences",
                 icon: "🌙",
-                title: "Dark mode",
-                description: "Use a darker color theme",
-                type: "toggle",
+                title: "Preferences",
+                description: "Set preferences for this App",
+                type: "link",
+                action() {
+                  App.pages.newPage({ config: App.pages.configs.settings.preferences });
+                }
               },
               {
                 id: "language",
@@ -57,6 +63,43 @@ export const settings = {
               }
             ]
           }
+        ]
+      }
+    }
+  },
+
+  preferences: {
+    template: "settings",
+    getParams() {
+      return {
+        title: "Preferences",
+        sections: [
+          {
+            title: "Appearance",
+            items: [
+              {
+                id: "darkMode",
+                icon: "🌙",
+                title: "Dark mode",
+                description: "Use a darker color theme",
+                type: "toggle",
+              },
+            ]
+          },
+
+          {
+            title: "Notifications",
+            items: [
+              {
+                id: "pushNotifications",
+                icon: "🔔",
+                title: "Push notifications",
+                description: "Receive updates from the app",
+                type: "toggle",
+              }
+            ]
+          },
+
         ]
       }
     }

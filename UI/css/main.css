@@ -24,7 +24,7 @@
 @import "./components/Tooltip.css";
 
 
-@import "./components/items.css";
+@import "./components/Items.css";
 
 
 /* @import "./components/Divider.css";
@@ -187,14 +187,8 @@
 }
 
 
-
-
 .favorite-btn.active svg {
   fill: #ff5a5f;
-}
-
-.favorite-btn:hover svg {
-  fill: #ff6b70;
 }
 
 

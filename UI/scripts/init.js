@@ -230,8 +230,7 @@ function initiate() {
         App.pages.configs
       );
 
-      console.log(config)
-
+      App.pages.clear();
       App.pages.newPage({ config, animation: false });
     });
   });
